@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>基础代谢率计算器 - WebUtils</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="基础代谢率计算器 - WebUtils" />
+    <meta name="keywords" content="bmr-calculator,life,tools,webutils" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://tools.realtime-ai.chat/tools/life/bmr-calculator.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="基础代谢率计算器 - WebUtils" />
+    <meta property="og:description" content="基础代谢率计算器 - WebUtils" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://tools.realtime-ai.chat/tools/life/bmr-calculator.html"
+    />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="基础代谢率计算器 - WebUtils" />
+    <meta name="twitter:description" content="基础代谢率计算器 - WebUtils" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-input: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-yellow: #fbbf24;
+        --accent-purple: #a855f7;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --glow-green: rgb(16, 185, 129, 0.15);
+        --glow-red: rgb(244, 63, 94, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-input: #f5f5f5;
+        --bg-hover: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d5d5d5;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-card);
+        cursor: pointer;
+        font-size: 1.2rem;
+        z-index: 100;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      :root {
+        --bg-color: #f5f5f5;
+        --card-bg: #fff;
+        --text-color: #333;
+        --border-color: #e0e0e0;
+        --primary-color: #e91e63;
+        --primary-hover: #c2185b;
+        --shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #1a1a1a;
+          --card-bg: #2d2d2d;
+          --text-color: #e0e0e0;
+          --border-color: #444;
+          --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        }
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 8px;
+        font-size: 24px;
+      }
+      .subtitle {
+        text-align: center;
+        color: #888;
+        margin-bottom: 24px;
+        font-size: 14px;
+      }
+      .card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .gender-select {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .gender-btn {
+        flex: 1;
+        padding: 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-color);
+        color: var(--text-color);
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .gender-btn.active {
+        border-color: var(--primary-color);
+        background: rgba(233, 30, 99, 0.1);
+      }
+      .gender-btn .icon {
+        font-size: 32px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .input-with-unit {
+        display: flex;
+        align-items: center;
+      }
+      .form-input {
+        flex: 1;
+        padding: 14px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px 0 0 8px;
+        background: var(--bg-color);
+        color: var(--text-color);
+        font-size: 18px;
+        transition: border-color 0.3s;
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
+      .input-unit {
+        padding: 14px 16px;
+        background: var(--border-color);
+        border: 2px solid var(--border-color);
+        border-left: none;
+        border-radius: 0 8px 8px 0;
+        font-size: 14px;
+        color: #666;
+      }
+      .activity-select {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .activity-option {
+        padding: 14px 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-color);
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .activity-option:hover {
+        border-color: var(--primary-color);
+      }
+      .activity-option.active {
+        border-color: var(--primary-color);
+        background: rgba(233, 30, 99, 0.1);
+      }
+      .activity-option input {
+        display: none;
+      }
+      .activity-name {
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .activity-desc {
+        font-size: 12px;
+        color: #888;
+      }
+      .btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 8px;
+        background: var(--primary-color);
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .btn:hover {
+        background: var(--primary-hover);
+      }
+      .result-card {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+        border-radius: 16px;
+        padding: 32px;
+        color: white;
+        text-align: center;
+      }
+      .result-main {
+        font-size: 56px;
+        font-weight: 700;
+      }
+      .result-unit {
+        font-size: 18px;
+        opacity: 0.9;
+      }
+      .result-label {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-top: 8px;
+      }
+      .result-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+      }
+      .result-item {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .result-item-value {
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .result-item-label {
+        font-size: 12px;
+        opacity: 0.9;
+        margin-top: 4px;
+      }
+      .detail-section {
+        margin-top: 24px;
+      }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: var(--bg-color);
+        border-radius: 8px;
+      }
+      .detail-label {
+        color: #888;
+        font-size: 14px;
+      }
+      .detail-value {
+        font-weight: 600;
+      }
+      .tips-section {
+        margin-top: 24px;
+      }
+      .tip-item {
+        display: flex;
+        gap: 12px;
+        padding: 14px;
+        background: var(--bg-color);
+        border-radius: 8px;
+        margin-bottom: 8px;
+      }
+      .tip-icon {
+        font-size: 20px;
+      }
+      .tip-content {
+        flex: 1;
+      }
+      .tip-title {
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .tip-desc {
+        font-size: 13px;
+        color: #888;
+        line-height: 1.5;
+      }
+      .bmi-display {
+        margin-top: 20px;
+        padding: 16px;
+        background: var(--bg-color);
+        border-radius: 12px;
+      }
+      .bmi-bar {
+        height: 12px;
+        border-radius: 6px;
+        background: linear-gradient(to right, #2196f3, #4caf50, #ffeb3b, #ff9800, #f44336);
+        position: relative;
+        margin-top: 8px;
+      }
+      .bmi-indicator {
+        position: absolute;
+        top: -4px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border: 3px solid #333;
+        border-radius: 50%;
+        transform: translateX(-50%);
+        transition: left 0.3s;
+      }
+      .bmi-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 11px;
+        color: #888;
+      }
+      .bmi-value {
+        text-align: center;
+        margin-top: 12px;
+      }
+      .bmi-number {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+      .bmi-status {
+        font-size: 14px;
+        color: #888;
+      }
+      @media (max-width: 480px) {
+        .result-grid {
+          grid-template-columns: 1fr;
+        }
+        .detail-grid {
+          grid-template-columns: 1fr;
+        }
+        .result-main {
+          font-size: 48px;
+        }
+      }
+
+      .breadcrumb {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+      }
+      .breadcrumb a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+      <span id="theme-icon">🌙</span>
+    </button>
+
+    <nav class="breadcrumb">
+      <a href="../../index.html">首页</a>
+      <span>›</span>
+      基础代谢率计算器
+    </nav>
+    <div class="container">
+      <h1>🔥 基础代谢率计算器</h1>
+      <p class="subtitle">计算BMR和每日热量需求，科学管理体重</p>
+
+      <div class="card">
+        <div class="section-title">👤 基本信息</div>
+
+        <div class="gender-select">
+          <button class="gender-btn active" id="genderMale" onclick="setGender('male')">
+            <span class="icon">👨</span>
+            <span>男性</span>
+          </button>
+          <button class="gender-btn" id="genderFemale" onclick="setGender('female')">
+            <span class="icon">👩</span>
+            <span>女性</span>
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label>年龄</label>
+          <div class="input-with-unit">
+            <input type="number" class="form-input" id="age" value="25" min="1" max="120" />
+            <span class="input-unit">岁</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>身高</label>
+          <div class="input-with-unit">
+            <input type="number" class="form-input" id="height" value="170" min="50" max="250" />
+            <span class="input-unit">cm</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>体重</label>
+          <div class="input-with-unit">
+            <input
+              type="number"
+              class="form-input"
+              id="weight"
+              value="65"
+              min="20"
+              max="300"
+              step="0.1"
+            />
+            <span class="input-unit">kg</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">🏃 活动水平</div>
+        <div class="activity-select">
+          <label class="activity-option active" onclick="setActivity(1.2)">
+            <input type="radio" name="activity" value="1.2" checked />
+            <div class="activity-name">久坐不动</div>
+            <div class="activity-desc">办公室工作，几乎不运动</div>
+          </label>
+          <label class="activity-option" onclick="setActivity(1.375)">
+            <input type="radio" name="activity" value="1.375" />
+            <div class="activity-name">轻度活动</div>
+            <div class="activity-desc">每周运动1-3次</div>
+          </label>
+          <label class="activity-option" onclick="setActivity(1.55)">
+            <input type="radio" name="activity" value="1.55" />
+            <div class="activity-name">中度活动</div>
+            <div class="activity-desc">每周运动3-5次</div>
+          </label>
+          <label class="activity-option" onclick="setActivity(1.725)">
+            <input type="radio" name="activity" value="1.725" />
+            <div class="activity-name">高度活动</div>
+            <div class="activity-desc">每周运动6-7次，高强度</div>
+          </label>
+          <label class="activity-option" onclick="setActivity(1.9)">
+            <input type="radio" name="activity" value="1.9" />
+            <div class="activity-name">专业运动员</div>
+            <div class="activity-desc">每天高强度训练或体力劳动</div>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn" onclick="calculate()">计算代谢率</button>
+
+      <div id="resultSection" style="display: none; margin-top: 20px">
+        <div class="result-card">
+          <div class="result-label">基础代谢率 (BMR)</div>
+          <div class="result-main" id="bmrValue">0</div>
+          <div class="result-unit">千卡/天</div>
+
+          <div class="result-grid">
+            <div class="result-item">
+              <div class="result-item-value" id="tdeeValue">0</div>
+              <div class="result-item-label">每日总消耗 (TDEE)</div>
+            </div>
+            <div class="result-item">
+              <div class="result-item-value" id="loseWeight">0</div>
+              <div class="result-item-label">减重摄入建议</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px">
+          <div class="bmi-display">
+            <div class="section-title" style="margin-bottom: 8px">📊 BMI 指数</div>
+            <div class="bmi-bar">
+              <div class="bmi-indicator" id="bmiIndicator"></div>
+            </div>
+            <div class="bmi-labels">
+              <span>偏瘦</span>
+              <span>正常</span>
+              <span>超重</span>
+              <span>肥胖</span>
+            </div>
+            <div class="bmi-value">
+              <div class="bmi-number" id="bmiValue">0</div>
+              <div class="bmi-status" id="bmiStatus">-</div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="section-title">📋 详细数据</div>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">理想体重</span>
+                <span class="detail-value" id="idealWeight">-</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">体脂率(估)</span>
+                <span class="detail-value" id="bodyFat">-</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">增重摄入</span>
+                <span class="detail-value" id="gainWeight">-</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">维持体重</span>
+                <span class="detail-value" id="maintainWeight">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tips-section">
+            <div class="section-title">💡 健康建议</div>
+            <div id="tipsList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let gender = "male";
+      let activityLevel = 1.2;
+
+      function setGender(g) {
+        gender = g;
+        document.getElementById("genderMale").classList.toggle("active", g === "male");
+        document.getElementById("genderFemale").classList.toggle("active", g === "female");
+      }
+
+      function setActivity(level) {
+        activityLevel = level;
+        document.querySelectorAll(".activity-option").forEach((opt) => {
+          opt.classList.remove("active");
+        });
+        event.currentTarget.classList.add("active");
+      }
+
+      function calculate() {
+        const age = parseInt(document.getElementById("age").value);
+        const height = parseFloat(document.getElementById("height").value);
+        const weight = parseFloat(document.getElementById("weight").value);
+
+        if (!age || !height || !weight) {
+          alert("请填写完整信息");
+          return;
+        }
+
+        // Mifflin-St Jeor 公式计算 BMR
+        let bmr;
+        if (gender === "male") {
+          bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+        } else {
+          bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+        }
+
+        // TDEE = BMR * 活动系数
+        const tdee = bmr * activityLevel;
+
+        // BMI
+        const bmi = weight / Math.pow(height / 100, 2);
+
+        // 理想体重 (BMI = 22)
+        const idealWeight = 22 * Math.pow(height / 100, 2);
+
+        // 体脂率估算 (BMI法)
+        let bodyFat;
+        if (gender === "male") {
+          bodyFat = 1.2 * bmi + 0.23 * age - 16.2;
+        } else {
+          bodyFat = 1.2 * bmi + 0.23 * age - 5.4;
+        }
+        bodyFat = Math.max(3, Math.min(60, bodyFat));
+
+        // 显示结果
+        document.getElementById("resultSection").style.display = "block";
+        document.getElementById("bmrValue").textContent = Math.round(bmr);
+        document.getElementById("tdeeValue").textContent = Math.round(tdee);
+        document.getElementById("loseWeight").textContent = Math.round(tdee * 0.8);
+        document.getElementById("bmiValue").textContent = bmi.toFixed(1);
+        document.getElementById("idealWeight").textContent = idealWeight.toFixed(1) + " kg";
+        document.getElementById("bodyFat").textContent = bodyFat.toFixed(1) + "%";
+        document.getElementById("gainWeight").textContent = Math.round(tdee * 1.15) + " kcal";
+        document.getElementById("maintainWeight").textContent = Math.round(tdee) + " kcal";
+
+        // BMI 状态
+        let bmiStatus, bmiPosition;
+        if (bmi < 18.5) {
+          bmiStatus = "偏瘦";
+          bmiPosition = (bmi / 18.5) * 25;
+        } else if (bmi < 24) {
+          bmiStatus = "正常";
+          bmiPosition = 25 + ((bmi - 18.5) / 5.5) * 25;
+        } else if (bmi < 28) {
+          bmiStatus = "超重";
+          bmiPosition = 50 + ((bmi - 24) / 4) * 25;
+        } else {
+          bmiStatus = "肥胖";
+          bmiPosition = 75 + Math.min(((bmi - 28) / 12) * 25, 25);
+        }
+
+        document.getElementById("bmiStatus").textContent = bmiStatus;
+        document.getElementById("bmiIndicator").style.left = bmiPosition + "%";
+
+        // 生成建议
+        const tips = [];
+
+        if (bmi < 18.5) {
+          tips.push({
+            icon: "🍽️",
+            title: "适当增加热量摄入",
+            desc: "建议每日摄入比TDEE多300-500千卡，选择高营养密度食物"
+          });
+        } else if (bmi >= 24) {
+          tips.push({
+            icon: "🥗",
+            title: "控制热量摄入",
+            desc: "建议每日摄入比TDEE少300-500千卡，安全减重速度为每周0.5-1kg"
+          });
+        }
+
+        tips.push({
+          icon: "💧",
+          title: "保持水分摄入",
+          desc: `建议每日饮水${Math.round(weight * 35)}ml，约${Math.round((weight * 35) / 250)}杯水`
+        });
+
+        tips.push({
+          icon: "🏋️",
+          title: "增加肌肉量",
+          desc: "力量训练可以提高基础代谢率，每周建议进行2-3次力量训练"
+        });
+
+        tips.push({
+          icon: "😴",
+          title: "保证充足睡眠",
+          desc: "睡眠不足会降低代谢率，建议每天保证7-9小时睡眠"
+        });
+
+        document.getElementById("tipsList").innerHTML = tips
+          .map(
+            (tip) => `
+                <div class="tip-item">
+                    <span class="tip-icon">${tip.icon}</span>
+                    <div class="tip-content">
+                        <div class="tip-title">${tip.title}</div>
+                        <div class="tip-desc">${tip.desc}</div>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+
+        // 滚动到结果
+        document.getElementById("resultSection").scrollIntoView({ behavior: "smooth" });
+      }
+
+      // Theme toggle
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", newTheme);
+        document.getElementById("theme-icon").textContent = newTheme === "light" ? "☀️" : "🌙";
+        localStorage.setItem("theme", newTheme);
+      }
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      if (savedTheme === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+        document.getElementById("theme-icon").textContent = "☀️";
+      }
+    </script>
+  </body>
+</html>

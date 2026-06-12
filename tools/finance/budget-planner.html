@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>家庭预算规划器 - WebUtils</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="家庭预算规划器 - WebUtils" />
+    <meta name="keywords" content="budget-planner,finance,tools,webutils" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://tools.realtime-ai.chat/tools/finance/budget-planner.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="家庭预算规划器 - WebUtils" />
+    <meta property="og:description" content="家庭预算规划器 - WebUtils" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://tools.realtime-ai.chat/tools/finance/budget-planner.html"
+    />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="家庭预算规划器 - WebUtils" />
+    <meta name="twitter:description" content="家庭预算规划器 - WebUtils" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-input: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-yellow: #fbbf24;
+        --accent-purple: #a855f7;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --glow-green: rgb(16, 185, 129, 0.15);
+        --glow-red: rgb(244, 63, 94, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-input: #f5f5f5;
+        --bg-hover: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d5d5d5;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-card);
+        cursor: pointer;
+        font-size: 1.2rem;
+        z-index: 100;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --bg: #0a0a0f;
+        --card: #12121a;
+        --border: #2a2a3a;
+        --text: #fff;
+        --text2: #888;
+        --accent: #10b981;
+        --warn: #f59e0b;
+        --danger: #ef4444;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f5f5f5;
+          --card: #fff;
+          --border: #e0e0e0;
+          --text: #333;
+          --text2: #666;
+        }
+      }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 8px;
+        font-size: 1.8rem;
+      }
+      .subtitle {
+        text-align: center;
+        color: var(--text2);
+        margin-bottom: 24px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      .card-title {
+        font-size: 1rem;
+        color: var(--text2);
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .form-group {
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .form-group label {
+        font-size: 0.9rem;
+        color: var(--text2);
+        flex: 1;
+      }
+      .form-group input {
+        width: 120px;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 0.9rem;
+        text-align: right;
+      }
+      .form-group input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .summary-item {
+        background: var(--bg);
+        padding: 16px;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .summary-item .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      .summary-item .label {
+        font-size: 0.8rem;
+        color: var(--text2);
+        margin-top: 4px;
+      }
+      .summary-item.income .value {
+        color: var(--accent);
+      }
+      .summary-item.expense .value {
+        color: var(--danger);
+      }
+      .summary-item.balance .value {
+        color: var(--warn);
+      }
+      .progress-bar {
+        height: 24px;
+        background: var(--bg);
+        border-radius: 12px;
+        overflow: hidden;
+        margin: 16px 0;
+      }
+      .progress-fill {
+        height: 100%;
+        transition: width 0.3s;
+        display: flex;
+      }
+      .progress-segment {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        color: white;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+      }
+      .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+      }
+      .advice {
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 16px;
+      }
+      .advice.good {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid var(--accent);
+      }
+      .advice.warn {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid var(--warn);
+      }
+      .advice.bad {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid var(--danger);
+      }
+      .advice-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .advice-text {
+        font-size: 0.9rem;
+        color: var(--text2);
+      }
+      .btn {
+        padding: 8px 16px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--text);
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+      .btn:hover {
+        border-color: var(--accent);
+      }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .back-link:hover {
+        text-decoration: underline;
+      }
+
+      .breadcrumb {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+      }
+      .breadcrumb a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+      <span id="theme-icon">🌙</span>
+    </button>
+
+    <nav class="breadcrumb">
+      <a href="../../index.html">首页</a>
+      <span>›</span>
+      家庭预算规划器
+    </nav>
+    <div class="container">
+      <a href="../../index.html" class="back-link">← 返回</a>
+      <h1>📊 家庭预算规划器</h1>
+      <p class="subtitle">合理规划收支，实现财务自由</p>
+
+      <div class="summary-grid">
+        <div class="summary-item income">
+          <div class="value" id="totalIncome">¥0</div>
+          <div class="label">总收入</div>
+        </div>
+        <div class="summary-item expense">
+          <div class="value" id="totalExpense">¥0</div>
+          <div class="label">总支出</div>
+        </div>
+        <div class="summary-item balance">
+          <div class="value" id="balance">¥0</div>
+          <div class="label">结余</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">支出占比分析</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="expenseBar"></div>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">
+            <span>收入项目</span>
+          </div>
+          <div class="form-group">
+            <label>工资收入</label>
+            <input type="number" id="income_salary" value="15000" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>副业收入</label>
+            <input type="number" id="income_side" value="0" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>投资收益</label>
+            <input type="number" id="income_invest" value="0" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>其他收入</label>
+            <input type="number" id="income_other" value="0" oninput="calculate()" />
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>固定支出</span>
+          </div>
+          <div class="form-group">
+            <label>房租/房贷</label>
+            <input type="number" id="expense_housing" value="4000" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>水电燃气</label>
+            <input type="number" id="expense_utilities" value="300" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>通讯费用</label>
+            <input type="number" id="expense_phone" value="200" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>交通出行</label>
+            <input type="number" id="expense_transport" value="500" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>保险费用</label>
+            <input type="number" id="expense_insurance" value="500" oninput="calculate()" />
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>生活支出</span>
+          </div>
+          <div class="form-group">
+            <label>餐饮食品</label>
+            <input type="number" id="expense_food" value="2000" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>日常用品</label>
+            <input type="number" id="expense_daily" value="500" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>服装购物</label>
+            <input type="number" id="expense_shopping" value="500" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>娱乐休闲</label>
+            <input type="number" id="expense_entertainment" value="500" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>医疗健康</label>
+            <input type="number" id="expense_health" value="200" oninput="calculate()" />
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>储蓄投资</span>
+          </div>
+          <div class="form-group">
+            <label>定期储蓄</label>
+            <input type="number" id="saving_regular" value="2000" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>基金定投</label>
+            <input type="number" id="saving_fund" value="1000" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>教育投资</label>
+            <input type="number" id="saving_education" value="500" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>应急储备</label>
+            <input type="number" id="saving_emergency" value="500" oninput="calculate()" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">财务健康分析</div>
+        <div id="advice"></div>
+      </div>
+    </div>
+
+    <script>
+      const categories = {
+        housing: { name: "住房", color: "#ef4444" },
+        utilities: { name: "水电", color: "#f97316" },
+        phone: { name: "通讯", color: "#f59e0b" },
+        transport: { name: "交通", color: "#eab308" },
+        insurance: { name: "保险", color: "#84cc16" },
+        food: { name: "餐饮", color: "#22c55e" },
+        daily: { name: "日用", color: "#14b8a6" },
+        shopping: { name: "购物", color: "#06b6d4" },
+        entertainment: { name: "娱乐", color: "#3b82f6" },
+        health: { name: "医疗", color: "#8b5cf6" }
+      };
+
+      function calculate() {
+        // 计算收入
+        const incomes = ["salary", "side", "invest", "other"];
+        let totalIncome = 0;
+        incomes.forEach((id) => {
+          totalIncome += parseFloat(document.getElementById("income_" + id).value) || 0;
+        });
+
+        // 计算支出
+        const expenses = {};
+        let totalExpense = 0;
+        Object.keys(categories).forEach((key) => {
+          const value = parseFloat(document.getElementById("expense_" + key).value) || 0;
+          expenses[key] = value;
+          totalExpense += value;
+        });
+
+        // 计算储蓄
+        const savings = ["regular", "fund", "education", "emergency"];
+        let totalSaving = 0;
+        savings.forEach((id) => {
+          totalSaving += parseFloat(document.getElementById("saving_" + id).value) || 0;
+        });
+
+        const balance = totalIncome - totalExpense - totalSaving;
+
+        const fmt = (n) => "¥" + n.toLocaleString("zh-CN");
+
+        document.getElementById("totalIncome").textContent = fmt(totalIncome);
+        document.getElementById("totalExpense").textContent = fmt(totalExpense);
+
+        const balanceEl = document.getElementById("balance");
+        balanceEl.textContent = fmt(balance);
+        balanceEl.style.color = balance >= 0 ? "var(--accent)" : "var(--danger)";
+
+        // 渲染支出占比条
+        const barContainer = document.getElementById("expenseBar");
+        barContainer.textContent = "";
+
+        const legendContainer = document.getElementById("legend");
+        legendContainer.textContent = "";
+
+        if (totalIncome > 0) {
+          Object.keys(categories).forEach((key) => {
+            const percentage = (expenses[key] / totalIncome) * 100;
+            if (percentage > 0) {
+              const segment = document.createElement("div");
+              segment.className = "progress-segment";
+              segment.style.width = percentage + "%";
+              segment.style.backgroundColor = categories[key].color;
+              if (percentage > 5) {
+                segment.textContent = Math.round(percentage) + "%";
+              }
+              barContainer.appendChild(segment);
+
+              const legendItem = document.createElement("div");
+              legendItem.className = "legend-item";
+
+              const dot = document.createElement("div");
+              dot.className = "legend-dot";
+              dot.style.backgroundColor = categories[key].color;
+
+              const text = document.createElement("span");
+              text.textContent = categories[key].name + " " + fmt(expenses[key]);
+
+              legendItem.appendChild(dot);
+              legendItem.appendChild(text);
+              legendContainer.appendChild(legendItem);
+            }
+          });
+        }
+
+        // 生成建议
+        generateAdvice(totalIncome, totalExpense, totalSaving, balance, expenses);
+      }
+
+      function generateAdvice(income, expense, saving, balance, expenses) {
+        const container = document.getElementById("advice");
+        container.textContent = "";
+
+        const savingRate = income > 0 ? (saving / income) * 100 : 0;
+        const expenseRate = income > 0 ? (expense / income) * 100 : 0;
+        const housingRate = income > 0 ? (expenses.housing / income) * 100 : 0;
+
+        const advices = [];
+
+        // 储蓄率建议
+        if (savingRate >= 30) {
+          advices.push({
+            type: "good",
+            title: "储蓄率优秀",
+            text:
+              "您的储蓄率达到" +
+              savingRate.toFixed(1) +
+              "%，财务状况非常健康！建议继续保持，并考虑多元化投资。"
+          });
+        } else if (savingRate >= 20) {
+          advices.push({
+            type: "good",
+            title: "储蓄率良好",
+            text: "您的储蓄率为" + savingRate.toFixed(1) + "%，达到了基本的财务安全线。"
+          });
+        } else if (savingRate >= 10) {
+          advices.push({
+            type: "warn",
+            title: "储蓄率偏低",
+            text: "您的储蓄率仅为" + savingRate.toFixed(1) + "%，建议提高到20%以上以应对突发情况。"
+          });
+        } else {
+          advices.push({
+            type: "bad",
+            title: "储蓄率过低",
+            text:
+              "您的储蓄率只有" +
+              savingRate.toFixed(1) +
+              "%，存在较大财务风险，建议尽快调整支出结构。"
+          });
+        }
+
+        // 住房支出建议
+        if (housingRate > 40) {
+          advices.push({
+            type: "bad",
+            title: "住房支出过高",
+            text:
+              "住房支出占收入的" +
+              housingRate.toFixed(1) +
+              "%，超过40%的警戒线，会严重影响生活质量。"
+          });
+        } else if (housingRate > 30) {
+          advices.push({
+            type: "warn",
+            title: "住房压力较大",
+            text: "住房支出占收入的" + housingRate.toFixed(1) + "%，建议控制在30%以内。"
+          });
+        }
+
+        // 结余建议
+        if (balance < 0) {
+          advices.push({
+            type: "bad",
+            title: "入不敷出",
+            text:
+              "当前支出超过收入" + Math.abs(balance).toLocaleString() + "元，请立即调整支出计划！"
+          });
+        }
+
+        advices.forEach((advice) => {
+          const div = document.createElement("div");
+          div.className = "advice " + advice.type;
+
+          const title = document.createElement("div");
+          title.className = "advice-title";
+          title.textContent = advice.title;
+
+          const text = document.createElement("div");
+          text.className = "advice-text";
+          text.textContent = advice.text;
+
+          div.appendChild(title);
+          div.appendChild(text);
+          container.appendChild(div);
+        });
+      }
+
+      calculate();
+
+      // Theme toggle
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", newTheme);
+        document.getElementById("theme-icon").textContent = newTheme === "light" ? "☀️" : "🌙";
+        localStorage.setItem("theme", newTheme);
+      }
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      if (savedTheme === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+        document.getElementById("theme-icon").textContent = "☀️";
+      }
+    </script>
+  </body>
+</html>

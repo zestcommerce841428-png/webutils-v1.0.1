@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文本列处理器 - WebUtils</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="文本列处理器 - WebUtils" />
+    <meta name="keywords" content="column-processor,text,tools,webutils" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://tools.realtime-ai.chat/tools/text/column-processor.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="文本列处理器 - WebUtils" />
+    <meta property="og:description" content="文本列处理器 - WebUtils" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://tools.realtime-ai.chat/tools/text/column-processor.html"
+    />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="文本列处理器 - WebUtils" />
+    <meta name="twitter:description" content="文本列处理器 - WebUtils" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-input: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-yellow: #fbbf24;
+        --accent-purple: #a855f7;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --glow-green: rgb(16, 185, 129, 0.15);
+        --glow-red: rgb(244, 63, 94, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-input: #f5f5f5;
+        --bg-hover: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d5d5d5;
+      }
+
+      :root {
+        --spacing-compact: 0.5rem;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+      }
+
+      .theme-toggle {
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        padding: 0.5rem;
+      }
+
+      .settings-panel {
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .settings-grid label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .settings-grid input,
+      .settings-grid select {
+        margin-bottom: 0;
+      }
+
+      .operation-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--pico-muted-border-color);
+      }
+
+      .operation-buttons button {
+        flex: 1;
+        min-width: 140px;
+      }
+
+      .editor-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+
+      @media (max-width: 768px) {
+        .editor-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .editor-panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .editor-panel label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 300px;
+        font-family: Consolas, Monaco, monospace;
+        font-size: 0.9rem;
+        resize: vertical;
+      }
+
+      .panel-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .panel-actions button {
+        flex: 1;
+      }
+
+      .preview-table {
+        margin-top: 1.5rem;
+        overflow-x: auto;
+      }
+
+      .preview-table h3 {
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+      }
+
+      .preview-table table {
+        margin-bottom: 0;
+      }
+
+      .preview-table th {
+        background: var(--pico-primary);
+        color: white;
+        padding: 0.5rem;
+        white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .preview-table th:hover {
+        opacity: 0.9;
+      }
+
+      .preview-table th.selected {
+        background: var(--pico-secondary);
+      }
+
+      .preview-table td {
+        padding: 0.5rem;
+        white-space: nowrap;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .column-info {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: var(--pico-muted-color);
+      }
+
+      .column-info span {
+        background: var(--pico-card-background-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--pico-border-radius);
+        border: 1px solid var(--pico-muted-border-color);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--pico-primary);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--pico-border-radius);
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 1000;
+      }
+
+      .toast.show {
+        opacity: 1;
+      }
+
+      .help-text {
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+        margin-top: 0.25rem;
+      }
+
+      .breadcrumb {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+      }
+      .breadcrumb a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumb">
+      <a href="../../index.html">首页</a>
+      <span>›</span>
+      文本列处理器
+    </nav>
+    <main class="container">
+      <a
+        href="../../index.html"
+        style="
+          display: inline-block;
+          margin-bottom: 1rem;
+          color: var(--pico-primary);
+          text-decoration: none;
+        "
+      >
+        ← 返回首页
+      </a>
+      <header>
+        <h1>文本列处理器</h1>
+        <button class="theme-toggle" onclick="toggleTheme()" title="切换主题">🌙</button>
+      </header>
+
+      <div class="settings-panel">
+        <div class="settings-grid">
+          <div>
+            <label for="delimiter">列分隔符</label>
+            <select id="delimiter">
+              <option value="\t">Tab制表符</option>
+              <option value=",">逗号 (,)</option>
+              <option value=";">分号 (;)</option>
+              <option value="|">竖线 (|)</option>
+              <option value=" ">空格</option>
+              <option value="custom">自定义</option>
+            </select>
+          </div>
+          <div>
+            <label for="customDelimiter">自定义分隔符</label>
+            <input type="text" id="customDelimiter" placeholder="输入自定义分隔符" disabled />
+          </div>
+          <div>
+            <label for="outputDelimiter">输出分隔符</label>
+            <select id="outputDelimiter">
+              <option value="\t">Tab制表符</option>
+              <option value=",">逗号 (,)</option>
+              <option value=";">分号 (;)</option>
+              <option value="|">竖线 (|)</option>
+              <option value=" ">空格</option>
+              <option value="custom">自定义</option>
+            </select>
+          </div>
+          <div>
+            <label for="customOutputDelimiter">自定义输出分隔符</label>
+            <input type="text" id="customOutputDelimiter" placeholder="输入自定义分隔符" disabled />
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div>
+            <label for="columnSelect">选择列 (点击表头或输入)</label>
+            <input type="text" id="columnSelect" placeholder="例如: 1,3,5 或 1-3 或 1,3-5" />
+            <p class="help-text">支持：单列(1)、多列(1,3)、范围(1-3)、组合(1,3-5)</p>
+          </div>
+          <div>
+            <label for="sortColumn">排序列</label>
+            <input type="number" id="sortColumn" value="1" min="1" />
+          </div>
+          <div>
+            <label for="sortOrder">排序方式</label>
+            <select id="sortOrder">
+              <option value="asc">升序</option>
+              <option value="desc">降序</option>
+            </select>
+          </div>
+          <div>
+            <label for="sortType">排序类型</label>
+            <select id="sortType">
+              <option value="string">字符串</option>
+              <option value="number">数字</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="operation-buttons">
+          <button onclick="extractColumns()">提取选中列</button>
+          <button onclick="deleteColumns()">删除选中列</button>
+          <button onclick="swapColumns()">交换列顺序</button>
+          <button onclick="sortByColumn()">按列排序</button>
+          <button onclick="removeDuplicates()">去除重复行</button>
+          <button onclick="transposeData()">行列转置</button>
+        </div>
+      </div>
+
+      <div class="editor-grid">
+        <div class="editor-panel">
+          <label for="input">输入文本</label>
+          <textarea
+            id="input"
+            placeholder="粘贴包含列的文本数据...&#10;&#10;例如（Tab分隔）：&#10;姓名	年龄	城市&#10;张三	25	北京&#10;李四	30	上海&#10;王五	28	广州"
+          ></textarea>
+          <div class="panel-actions">
+            <button class="secondary" onclick="parseInput()">解析数据</button>
+            <button class="secondary" onclick="clearInput()">清空</button>
+          </div>
+        </div>
+
+        <div class="editor-panel">
+          <label for="output">输出结果</label>
+          <textarea id="output" readonly placeholder="处理结果将显示在这里..."></textarea>
+          <div class="panel-actions">
+            <button class="secondary" onclick="copyOutput()">复制结果</button>
+            <button class="secondary" onclick="useAsInput()">作为输入</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-table">
+        <h3>
+          数据预览
+          <small>(点击表头选择列)</small>
+        </h3>
+        <div style="overflow-x: auto">
+          <table id="previewTable">
+            <thead id="previewHead"></thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+        <div class="column-info" id="columnInfo"></div>
+      </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      let parsedData = [];
+      let selectedColumns = new Set();
+
+      // 获取分隔符
+      function getDelimiter(selectId, customId) {
+        const select = document.getElementById(selectId);
+        const custom = document.getElementById(customId);
+        if (select.value === "custom") {
+          return custom.value || "\t";
+        }
+        return select.value === "\\t" ? "\t" : select.value;
+      }
+
+      // 启用/禁用自定义分隔符输入
+      document.getElementById("delimiter").addEventListener("change", function () {
+        document.getElementById("customDelimiter").disabled = this.value !== "custom";
+      });
+
+      document.getElementById("outputDelimiter").addEventListener("change", function () {
+        document.getElementById("customOutputDelimiter").disabled = this.value !== "custom";
+      });
+
+      // 解析输入
+      function parseInput() {
+        const input = document.getElementById("input").value.trim();
+        if (!input) {
+          showToast("请输入要处理的文本");
+          return;
+        }
+
+        const delimiter = getDelimiter("delimiter", "customDelimiter");
+        const lines = input.split("\n").filter((line) => line.trim());
+
+        parsedData = lines.map((line) => line.split(delimiter));
+        selectedColumns.clear();
+
+        renderPreview();
+        updateColumnInfo();
+      }
+
+      // 渲染预览表格
+      function renderPreview() {
+        const thead = document.getElementById("previewHead");
+        const tbody = document.getElementById("previewBody");
+
+        thead.textContent = "";
+        tbody.textContent = "";
+
+        if (parsedData.length === 0) return;
+
+        const maxCols = Math.max(...parsedData.map((row) => row.length));
+
+        // 表头
+        const headerRow = document.createElement("tr");
+        for (let i = 0; i < maxCols; i++) {
+          const th = document.createElement("th");
+          th.textContent = "列" + (i + 1);
+          th.dataset.col = i;
+          th.onclick = function () {
+            toggleColumnSelection(i, th);
+          };
+          if (selectedColumns.has(i)) {
+            th.classList.add("selected");
+          }
+          headerRow.appendChild(th);
+        }
+        thead.appendChild(headerRow);
+
+        // 数据行（最多显示20行）
+        const displayRows = parsedData.slice(0, 20);
+        displayRows.forEach((row) => {
+          const tr = document.createElement("tr");
+          for (let i = 0; i < maxCols; i++) {
+            const td = document.createElement("td");
+            td.textContent = row[i] || "";
+            td.title = row[i] || "";
+            tr.appendChild(td);
+          }
+          tbody.appendChild(tr);
+        });
+
+        if (parsedData.length > 20) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = maxCols;
+          td.textContent = "... 还有 " + (parsedData.length - 20) + " 行";
+          td.style.textAlign = "center";
+          td.style.color = "var(--pico-muted-color)";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        }
+      }
+
+      // 切换列选择
+      function toggleColumnSelection(colIndex, th) {
+        if (selectedColumns.has(colIndex)) {
+          selectedColumns.delete(colIndex);
+          th.classList.remove("selected");
+        } else {
+          selectedColumns.add(colIndex);
+          th.classList.add("selected");
+        }
+        updateColumnSelectInput();
+      }
+
+      // 更新列选择输入框
+      function updateColumnSelectInput() {
+        const sorted = Array.from(selectedColumns).sort((a, b) => a - b);
+        document.getElementById("columnSelect").value = sorted.map((c) => c + 1).join(",");
+      }
+
+      // 从输入框解析列选择
+      function parseColumnSelection() {
+        const input = document.getElementById("columnSelect").value.trim();
+        if (!input) return [];
+
+        const cols = new Set();
+        const parts = input.split(",");
+
+        for (const part of parts) {
+          if (part.includes("-")) {
+            const range = part.split("-").map((n) => parseInt(n.trim()) - 1);
+            const start = range[0];
+            const end = range[1];
+            for (let i = start; i <= end; i++) {
+              if (i >= 0) cols.add(i);
+            }
+          } else {
+            const col = parseInt(part.trim()) - 1;
+            if (col >= 0) cols.add(col);
+          }
+        }
+
+        return Array.from(cols).sort((a, b) => a - b);
+      }
+
+      // 更新列信息
+      function updateColumnInfo() {
+        const info = document.getElementById("columnInfo");
+        info.textContent = "";
+
+        if (parsedData.length === 0) {
+          return;
+        }
+
+        const maxCols = Math.max(...parsedData.map((row) => row.length));
+
+        const span1 = document.createElement("span");
+        span1.textContent = "总行数: " + parsedData.length;
+        info.appendChild(span1);
+
+        const span2 = document.createElement("span");
+        span2.textContent = "总列数: " + maxCols;
+        info.appendChild(span2);
+
+        const span3 = document.createElement("span");
+        span3.textContent = "已选择: " + selectedColumns.size + " 列";
+        info.appendChild(span3);
+      }
+
+      // 提取选中列
+      window.extractColumns = function () {
+        if (parsedData.length === 0) {
+          showToast("请先解析数据");
+          return;
+        }
+
+        const cols = parseColumnSelection();
+        if (cols.length === 0) {
+          showToast("请选择要提取的列");
+          return;
+        }
+
+        const delimiter = getDelimiter("outputDelimiter", "customOutputDelimiter");
+        const result = parsedData
+          .map((row) => {
+            return cols.map((c) => row[c] || "").join(delimiter);
+          })
+          .join("\n");
+
+        document.getElementById("output").value = result;
+        showToast("已提取 " + cols.length + " 列");
+      };
+
+      // 删除选中列
+      window.deleteColumns = function () {
+        if (parsedData.length === 0) {
+          showToast("请先解析数据");
+          return;
+        }
+
+        const colsToDelete = new Set(parseColumnSelection());
+        if (colsToDelete.size === 0) {
+          showToast("请选择要删除的列");
+          return;
+        }
+
+        const maxCols = Math.max(...parsedData.map((row) => row.length));
+        const remainingCols = [];
+        for (let i = 0; i < maxCols; i++) {
+          if (!colsToDelete.has(i)) {
+            remainingCols.push(i);
+          }
+        }
+
+        const delimiter = getDelimiter("outputDelimiter", "customOutputDelimiter");
+        const result = parsedData
+          .map((row) => {
+            return remainingCols.map((c) => row[c] || "").join(delimiter);
+          })
+          .join("\n");
+
+        document.getElementById("output").value = result;
+        showToast("已删除 " + colsToDelete.size + " 列");
+      };
+
+      // 交换列顺序
+      window.swapColumns = function () {
+        if (parsedData.length === 0) {
+          showToast("请先解析数据");
+          return;
+        }
+
+        const cols = parseColumnSelection();
+        if (cols.length < 2) {
+          showToast("请至少选择2列进行交换");
+          return;
+        }
+
+        const maxCols = Math.max(...parsedData.map((row) => row.length));
+        const newOrder = Array.from({ length: maxCols }, (_, i) => i);
+
+        // 交换选中的列（反转顺序）
+        for (let i = 0; i < cols.length; i++) {
+          newOrder[cols[i]] = cols[cols.length - 1 - i];
+        }
+
+        const delimiter = getDelimiter("outputDelimiter", "customOutputDelimiter");
+        const result = parsedData
+          .map((row) => {
+            return newOrder.map((c) => row[c] || "").join(delimiter);
+          })
+          .join("\n");
+
+        document.getElementById("output").value = result;
+        showToast("列顺序已交换");
+      };
+
+      // 按列排序
+      window.sortByColumn = function () {
+        if (parsedData.length === 0) {
+          showToast("请先解析数据");
+          return;
+        }
+
+        const sortCol = parseInt(document.getElementById("sortColumn").value) - 1;
+        const sortOrder = document.getElementById("sortOrder").value;
+        const sortType = document.getElementById("sortType").value;
+
+        const sorted = parsedData.slice().sort((a, b) => {
+          let valA = a[sortCol] || "";
+          let valB = b[sortCol] || "";
+
+          if (sortType === "number") {
+            valA = parseFloat(valA) || 0;
+            valB = parseFloat(valB) || 0;
+          }
+
+          let result;
+          if (sortType === "number") {
+            result = valA - valB;
+          } else {
+            result = valA.localeCompare(valB, "zh-CN");
+          }
+
+          return sortOrder === "desc" ? -result : result;
+        });
+
+        const delimiter = getDelimiter("outputDelimiter", "customOutputDelimiter");
+        const result = sorted.map((row) => row.join(delimiter)).join("\n");
+
+        document.getElementById("output").value = result;
+        showToast(
+          "已按第 " + (sortCol + 1) + " 列" + (sortOrder === "asc" ? "升序" : "降序") + "排序"
+        );
+      };
+
+      // 去除重复行
+      window.removeDuplicates = function () {
+        if (parsedData.length === 0) {
+          showToast("请先解析数据");
+          return;
+        }
+
+        const delimiter = getDelimiter("outputDelimiter", "customOutputDelimiter");
+        const seen = new Set();
+        const unique = [];
+
+        for (const row of parsedData) {
+          const key = row.join("\0");
+          if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(row);
+          }
+        }
+
+        const result = unique.map((row) => row.join(delimiter)).join("\n");
+        document.getElementById("output").value = result;
+        showToast("已去除 " + (parsedData.length - unique.length) + " 行重复");
+      };
+
+      // 行列转置
+      window.transposeData = function () {
+        if (parsedData.length === 0) {
+          showToast("请先解析数据");
+          return;
+        }
+
+        const maxCols = Math.max(...parsedData.map((row) => row.length));
+        const transposed = [];
+
+        for (let i = 0; i < maxCols; i++) {
+          transposed.push(parsedData.map((row) => row[i] || ""));
+        }
+
+        const delimiter = getDelimiter("outputDelimiter", "customOutputDelimiter");
+        const result = transposed.map((row) => row.join(delimiter)).join("\n");
+
+        document.getElementById("output").value = result;
+        showToast("行列已转置");
+      };
+
+      // 复制输出
+      window.copyOutput = function () {
+        const output = document.getElementById("output").value;
+        if (output) {
+          navigator.clipboard.writeText(output).then(() => {
+            showToast("已复制到剪贴板");
+          });
+        }
+      };
+
+      // 作为输入使用
+      window.useAsInput = function () {
+        const output = document.getElementById("output").value;
+        if (output) {
+          document.getElementById("input").value = output;
+          document.getElementById("output").value = "";
+          parseInput();
+        }
+      };
+
+      // 清空输入
+      window.clearInput = function () {
+        document.getElementById("input").value = "";
+        parsedData = [];
+        selectedColumns.clear();
+        renderPreview();
+        updateColumnInfo();
+      };
+
+      // 显示提示
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2000);
+      }
+
+      // 主题切换
+      window.toggleTheme = function () {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", newTheme);
+        document.querySelector(".theme-toggle").textContent = newTheme === "light" ? "🌙" : "☀️";
+        localStorage.setItem("theme", newTheme);
+      };
+
+      // 初始化主题
+      (function initTheme() {
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        document.querySelector(".theme-toggle").textContent = savedTheme === "light" ? "🌙" : "☀️";
+      })();
+
+      // 自动解析输入
+      document.getElementById("input").addEventListener("input", function () {
+        // 延迟解析，避免频繁操作
+        clearTimeout(this.parseTimeout);
+        this.parseTimeout = setTimeout(parseInput, 500);
+      });
+
+      // 列选择输入变化
+      document.getElementById("columnSelect").addEventListener("input", function () {
+        selectedColumns = new Set(parseColumnSelection());
+        renderPreview();
+        updateColumnInfo();
+      });
+    </script>
+  </body>
+</html>

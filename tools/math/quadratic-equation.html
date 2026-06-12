@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>一元二次方程求解 - WebUtils</title>
+    <meta name="description" content="一元二次方程求解器，显示详细步骤" />
+    <meta name="keywords" content="quadratic equation 一元二次方程 求根公式 判别式" />
+    <style>
+      :root {
+        --bg: #f8f9fa;
+        --card-bg: #fff;
+        --text: #212529;
+        --text-muted: #6c757d;
+        --border: #dee2e6;
+        --primary: #0d6efd;
+        --success: #198754;
+        --danger: #dc3545;
+        --shadow: 0 2px 8px rgb(0, 0, 0, 0.08);
+        --radius: 8px;
+      }
+      [data-theme="dark"] {
+        --bg: #0a0a0f;
+        --card-bg: #1a1a24;
+        --text: #e8e8ed;
+        --text-muted: #9898a4;
+        --border: #2a2a36;
+        --primary: #a855f7;
+        --success: #10b981;
+        --danger: #ef4444;
+        --shadow: 0 2px 8px rgb(0, 0, 0, 0.3);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 24px;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: var(--primary);
+        text-decoration: none;
+      }
+      h1 {
+        font-size: 1.75rem;
+        margin: 0 0 8px;
+      }
+      .desc {
+        color: var(--text-muted);
+        margin: 0 0 24px;
+      }
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+      }
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        cursor: pointer;
+        font-size: 1.2rem;
+        z-index: 100;
+      }
+      .equation {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      .equation input {
+        width: 60px;
+        padding: 10px;
+        font-size: 1.2rem;
+        text-align: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg);
+        color: var(--text);
+      }
+      .equation span {
+        color: var(--text-muted);
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: var(--radius);
+        background: var(--primary);
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 20px;
+      }
+      .btn:hover {
+        opacity: 0.9;
+      }
+      .results {
+        margin-top: 20px;
+      }
+      .result-item {
+        padding: 16px;
+        background: var(--bg);
+        border-radius: var(--radius);
+        margin-bottom: 12px;
+      }
+      .result-item .label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+      .result-item .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        font-family: ui-monospace, monospace;
+      }
+      .roots {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .steps {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+      }
+      .steps h4 {
+        margin: 0 0 12px;
+      }
+      .step {
+        padding: 12px;
+        background: var(--bg);
+        border-radius: var(--radius);
+        margin-bottom: 8px;
+        font-family: ui-monospace, monospace;
+        font-size: 0.9rem;
+      }
+      .step .number {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background: var(--primary);
+        color: #fff;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 24px;
+        font-size: 0.8rem;
+        margin-right: 8px;
+      }
+      .discriminant {
+        padding: 12px 16px;
+        border-radius: var(--radius);
+        margin-bottom: 16px;
+      }
+      .discriminant.positive {
+        background: rgba(25, 135, 84, 0.1);
+        border: 1px solid var(--success);
+      }
+      .discriminant.zero {
+        background: rgba(13, 110, 253, 0.1);
+        border: 1px solid var(--primary);
+      }
+      .discriminant.negative {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid var(--danger);
+      }
+      footer {
+        text-align: center;
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+      footer a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="../../index.html" class="back-link">← 返回工具列表</a>
+      <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+      <h1>一元二次方程求解</h1>
+      <p class="desc">ax² + bx + c = 0</p>
+
+      <div class="card">
+        <div class="equation">
+          <input type="number" id="a" value="1" step="any" oninput="solve()" />
+          <span>x² +</span>
+          <input type="number" id="b" value="-5" step="any" oninput="solve()" />
+          <span>x +</span>
+          <input type="number" id="c" value="6" step="any" oninput="solve()" />
+          <span>= 0</span>
+        </div>
+
+        <div class="results">
+          <div class="discriminant" id="discriminant"></div>
+
+          <div class="roots">
+            <div class="result-item">
+              <div class="label">根 x₁</div>
+              <div class="value" id="x1">-</div>
+            </div>
+            <div class="result-item">
+              <div class="label">根 x₂</div>
+              <div class="value" id="x2">-</div>
+            </div>
+          </div>
+
+          <div class="result-item" style="margin-top: 12px">
+            <div class="label">顶点坐标</div>
+            <div class="value" id="vertex">-</div>
+          </div>
+        </div>
+
+        <div class="steps">
+          <h4>求解步骤</h4>
+          <div id="stepsContainer"></div>
+        </div>
+      </div>
+
+      <footer>
+        纯前端工具 · 无服务器 ·
+        <a href="../../index.html">WebUtils</a>
+      </footer>
+    </div>
+
+    <script>
+      function formatNumber(n) {
+        if (Number.isInteger(n)) return n.toString();
+        return n.toFixed(6).replace(/\.?0+$/, "");
+      }
+
+      function solve() {
+        const a = parseFloat(document.getElementById("a").value);
+        const b = parseFloat(document.getElementById("b").value);
+        const c = parseFloat(document.getElementById("c").value);
+
+        const discEl = document.getElementById("discriminant");
+        const x1El = document.getElementById("x1");
+        const x2El = document.getElementById("x2");
+        const vertexEl = document.getElementById("vertex");
+        const stepsEl = document.getElementById("stepsContainer");
+
+        if (isNaN(a) || isNaN(b) || isNaN(c) || a === 0) {
+          discEl.className = "discriminant";
+          discEl.textContent = a === 0 ? "错误: a 不能为 0 (非二次方程)" : "请输入有效系数";
+          x1El.textContent = "-";
+          x2El.textContent = "-";
+          vertexEl.textContent = "-";
+          stepsEl.innerHTML = "";
+          return;
+        }
+
+        const D = b * b - 4 * a * c;
+        let steps = [];
+
+        steps.push(`方程: ${a}x² + ${b}x + ${c} = 0`);
+        steps.push(`判别式: Δ = b² - 4ac = ${b}² - 4×${a}×${c} = ${formatNumber(D)}`);
+
+        if (D > 0) {
+          discEl.className = "discriminant positive";
+          discEl.textContent = `Δ = ${formatNumber(D)} > 0，方程有两个不相等的实根`;
+
+          const sqrtD = Math.sqrt(D);
+          const x1 = (-b + sqrtD) / (2 * a);
+          const x2 = (-b - sqrtD) / (2 * a);
+
+          steps.push(`√Δ = √${formatNumber(D)} = ${formatNumber(sqrtD)}`);
+          steps.push(
+            `x₁ = (-b + √Δ) / 2a = (${-b} + ${formatNumber(sqrtD)}) / ${2 * a} = ${formatNumber(x1)}`
+          );
+          steps.push(
+            `x₂ = (-b - √Δ) / 2a = (${-b} - ${formatNumber(sqrtD)}) / ${2 * a} = ${formatNumber(x2)}`
+          );
+
+          x1El.textContent = formatNumber(x1);
+          x2El.textContent = formatNumber(x2);
+        } else if (D === 0) {
+          discEl.className = "discriminant zero";
+          discEl.textContent = `Δ = 0，方程有两个相等的实根（重根）`;
+
+          const x = -b / (2 * a);
+          steps.push(`x₁ = x₂ = -b / 2a = ${-b} / ${2 * a} = ${formatNumber(x)}`);
+
+          x1El.textContent = formatNumber(x);
+          x2El.textContent = formatNumber(x);
+        } else {
+          discEl.className = "discriminant negative";
+          discEl.textContent = `Δ = ${formatNumber(D)} < 0，方程有两个共轭复根`;
+
+          const realPart = -b / (2 * a);
+          const imagPart = Math.sqrt(-D) / (2 * a);
+
+          steps.push(`实部: -b / 2a = ${-b} / ${2 * a} = ${formatNumber(realPart)}`);
+          steps.push(
+            `虚部: √|Δ| / 2a = √${formatNumber(-D)} / ${2 * a} = ${formatNumber(imagPart)}`
+          );
+          steps.push(`x₁ = ${formatNumber(realPart)} + ${formatNumber(imagPart)}i`);
+          steps.push(`x₂ = ${formatNumber(realPart)} - ${formatNumber(imagPart)}i`);
+
+          x1El.textContent = `${formatNumber(realPart)} + ${formatNumber(imagPart)}i`;
+          x2El.textContent = `${formatNumber(realPart)} - ${formatNumber(imagPart)}i`;
+        }
+
+        // Vertex
+        const vx = -b / (2 * a);
+        const vy = a * vx * vx + b * vx + c;
+        vertexEl.textContent = `(${formatNumber(vx)}, ${formatNumber(vy)})`;
+        steps.push(`顶点: x = -b/2a = ${formatNumber(vx)}, y = ${formatNumber(vy)}`);
+
+        stepsEl.innerHTML = steps
+          .map((step, i) => `<div class="step"><span class="number">${i + 1}</span>${step}</div>`)
+          .join("");
+      }
+
+      solve();
+
+      function toggleTheme() {
+        const html = document.documentElement;
+        const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        html.setAttribute("data-theme", next);
+        document.querySelector(".theme-toggle").textContent = next === "dark" ? "🌙" : "☀️";
+        localStorage.setItem("theme", next);
+      }
+      (function () {
+        const saved = localStorage.getItem("theme");
+        if (saved) {
+          document.documentElement.setAttribute("data-theme", saved);
+          document.querySelector(".theme-toggle").textContent = saved === "dark" ? "🌙" : "☀️";
+        }
+      })();
+    </script>
+  </body>
+</html>

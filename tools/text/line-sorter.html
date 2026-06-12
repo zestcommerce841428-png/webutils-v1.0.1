@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>行排序工具 - WebUtils</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="按字母、数字或自定义规则排序文本行" />
+    <meta name="keywords" content="行 排序 sort 升序 降序 去重" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://tools.realtime-ai.chat/tools/text/line-sorter.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="行排序工具 - WebUtils" />
+    <meta property="og:description" content="按字母、数字或自定义规则排序文本行" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tools.realtime-ai.chat/tools/text/line-sorter.html" />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="行排序工具 - WebUtils" />
+    <meta name="twitter:description" content="按字母、数字或自定义规则排序文本行" />
+    <!-- OG Image -->
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:type" content="image/png" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-hover: #252532;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --accent-cyan: #00f5d4;
+        --accent-blue: #4cc9f0;
+        --glow-cyan: rgb(0 245 212 / 15%);
+        --radius: 8px;
+        --shadow: 0 2px 8px rgb(0 0 0 / 30%);
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-hover: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --accent-cyan: #0d9488;
+        --accent-blue: #0ea5e9;
+        --glow-cyan: rgb(13 148 136 / 15%);
+        --shadow: 0 2px 8px rgb(0 0 0 / 8%);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        background: var(--bg-deep);
+        color: var(--text-primary);
+        min-height: 100vh;
+        padding: 24px;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--accent-cyan);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: opacity 0.2s;
+      }
+
+      .back-link:hover {
+        opacity: 0.8;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .desc {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .theme-toggle {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-card);
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .theme-toggle:hover {
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 12px var(--glow-cyan);
+      }
+
+      .main-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      @media (width <= 900px) {
+        .main-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .panel-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .panel-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        font-family: inherit;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .btn:hover {
+        border-color: var(--accent-cyan);
+        color: var(--accent-cyan);
+      }
+
+      .btn:focus-visible {
+        outline: 2px solid var(--accent-cyan);
+        outline-offset: 2px;
+      }
+
+      .btn-primary {
+        background: var(--accent-cyan);
+        border-color: var(--accent-cyan);
+        color: var(--bg-deep);
+      }
+
+      .btn-primary:hover {
+        opacity: 0.9;
+        color: var(--bg-deep);
+      }
+
+      textarea {
+        flex: 1;
+        min-height: 400px;
+        padding: 16px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        color: var(--text-primary);
+        resize: vertical;
+        line-height: 1.7;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 0 3px var(--glow-cyan);
+      }
+
+      textarea::placeholder {
+        color: var(--text-muted);
+      }
+
+      .controls {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        padding: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .control-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .control-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+      }
+
+      select {
+        padding: 8px 12px;
+        font-family: inherit;
+        font-size: 0.85rem;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        color: var(--text-primary);
+        cursor: pointer;
+        min-width: 160px;
+      }
+
+      select:focus {
+        outline: none;
+        border-color: var(--accent-cyan);
+      }
+
+      .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        user-select: none;
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent-cyan);
+        cursor: pointer;
+      }
+
+      .checkbox-item:hover {
+        color: var(--text-primary);
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+      }
+
+      @media (width <= 900px) {
+        .action-buttons {
+          margin-left: 0;
+          width: 100%;
+          justify-content: flex-start;
+        }
+      }
+
+      .stats-bar {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius);
+        padding: 12px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      .stat-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--accent-cyan);
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-subtle);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+
+      footer a {
+        color: var(--accent-cyan);
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      .breadcrumb {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+      }
+      .breadcrumb a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumb">
+      <a href="../../index.html">首页</a>
+      <span>›</span>
+      行排序工具
+    </nav>
+    <div class="container">
+      <header class="header">
+        <div class="header-left">
+          <a href="../../index.html" class="back-link">← 返回工具列表</a>
+          <h1>行排序工具</h1>
+          <p class="desc">文本行排序、去重、反转、随机打乱</p>
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+      </header>
+
+      <div class="controls">
+        <div class="control-group">
+          <span class="control-label">排序方式:</span>
+          <select id="sortMode">
+            <option value="none">不排序</option>
+            <option value="az">A-Z 升序</option>
+            <option value="za">Z-A 降序</option>
+            <option value="length-asc">按长度 (短→长)</option>
+            <option value="length-desc">按长度 (长→短)</option>
+            <option value="numeric">数字排序</option>
+          </select>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" id="removeDuplicates" />
+            <span>去除重复行</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="trimWhitespace" />
+            <span>去除首尾空格</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="removeEmpty" />
+            <span>去除空行</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="caseInsensitive" />
+            <span>忽略大小写</span>
+          </label>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn" id="btnReverse" title="反转顺序">🔄 反转</button>
+          <button class="btn" id="btnShuffle" title="随机打乱">🎲 随机</button>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-label">输入行数:</span>
+          <span class="stat-value" id="inputLines">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">输出行数:</span>
+          <span class="stat-value" id="outputLines">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">去重数量:</span>
+          <span class="stat-value" id="duplicateCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">唯一行数:</span>
+          <span class="stat-value" id="uniqueLines">0</span>
+        </div>
+      </div>
+
+      <div class="main-layout">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">输入文本</span>
+            <div class="panel-actions">
+              <button class="btn" id="btnPaste">📋 粘贴</button>
+              <button class="btn" id="btnClearInput">清空</button>
+            </div>
+          </div>
+          <textarea id="inputText" placeholder="在此输入或粘贴文本，每行一个条目..."></textarea>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">输出结果</span>
+            <div class="panel-actions">
+              <button class="btn btn-primary" id="btnCopy">📋 复制</button>
+              <button class="btn" id="btnShare">🔗 分享</button>
+            </div>
+          </div>
+          <textarea id="outputText" readonly placeholder="处理结果将显示在这里..."></textarea>
+        </div>
+      </div>
+
+      <footer>
+        <a href="https://github.com/chicogong/html-tools" target="_blank" rel="noreferrer">
+          GitHub
+        </a>
+        · 纯前端工具 · 无服务器 ·
+        <a href="../../index.html">WebUtils</a>
+      </footer>
+    </div>
+
+    <script>
+      const LS_KEY = "line_sorter_v1";
+
+      const inputText = document.getElementById("inputText");
+      const outputText = document.getElementById("outputText");
+      const sortMode = document.getElementById("sortMode");
+      const removeDuplicates = document.getElementById("removeDuplicates");
+      const trimWhitespace = document.getElementById("trimWhitespace");
+      const removeEmpty = document.getElementById("removeEmpty");
+      const caseInsensitive = document.getElementById("caseInsensitive");
+
+      const inputLinesEl = document.getElementById("inputLines");
+      const outputLinesEl = document.getElementById("outputLines");
+      const duplicateCountEl = document.getElementById("duplicateCount");
+      const uniqueLinesEl = document.getElementById("uniqueLines");
+
+      const themeToggle = document.getElementById("themeToggle");
+
+      // Theme management
+      function initTheme() {
+        const saved = localStorage.getItem("theme");
+        if (saved === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+          themeToggle.textContent = "☀️";
+        }
+      }
+
+      themeToggle.addEventListener("click", () => {
+        const html = document.documentElement;
+        const isLight = html.getAttribute("data-theme") === "light";
+        if (isLight) {
+          html.removeAttribute("data-theme");
+          themeToggle.textContent = "🌙";
+          localStorage.setItem("theme", "dark");
+        } else {
+          html.setAttribute("data-theme", "light");
+          themeToggle.textContent = "☀️";
+          localStorage.setItem("theme", "light");
+        }
+      });
+
+      // Process lines
+      function processLines() {
+        let lines = inputText.value.split("\n");
+
+        // Trim whitespace
+        if (trimWhitespace.checked) {
+          lines = lines.map((line) => line.trim());
+        }
+
+        // Remove empty lines
+        if (removeEmpty.checked) {
+          lines = lines.filter((line) => line.length > 0);
+        }
+
+        // Remove duplicates
+        let duplicateRemoved = 0;
+        if (removeDuplicates.checked) {
+          const seen = new Set();
+          const uniqueLinesList = [];
+          for (const line of lines) {
+            const key = caseInsensitive.checked ? line.toLowerCase() : line;
+            if (!seen.has(key)) {
+              seen.add(key);
+              uniqueLinesList.push(line);
+            }
+          }
+          duplicateRemoved = lines.length - uniqueLinesList.length;
+          lines = uniqueLinesList;
+        }
+
+        // Sort
+        const mode = sortMode.value;
+        if (mode !== "none") {
+          lines.sort((a, b) => {
+            let valA = a;
+            let valB = b;
+
+            if (caseInsensitive.checked && (mode === "az" || mode === "za")) {
+              valA = a.toLowerCase();
+              valB = b.toLowerCase();
+            }
+
+            switch (mode) {
+              case "az":
+                return valA.localeCompare(valB);
+              case "za":
+                return valB.localeCompare(valA);
+              case "length-asc":
+                return a.length - b.length;
+              case "length-desc":
+                return b.length - a.length;
+              case "numeric": {
+                const numA = parseFloat(a) || 0;
+                const numB = parseFloat(b) || 0;
+                return numA - numB;
+              }
+              default:
+                return 0;
+            }
+          });
+        }
+
+        // Update output
+        outputText.value = lines.join("\n");
+
+        // Update stats
+        const inputLineCount = inputText.value ? inputText.value.split("\n").length : 0;
+        const outputLineCount = lines.length;
+        const uniqueSet = new Set(
+          caseInsensitive.checked ? lines.map((l) => l.toLowerCase()) : lines
+        );
+
+        inputLinesEl.textContent = inputLineCount;
+        outputLinesEl.textContent = outputLineCount;
+        duplicateCountEl.textContent = duplicateRemoved;
+        uniqueLinesEl.textContent = uniqueSet.size;
+
+        // Save state
+        saveState();
+      }
+
+      // Reverse lines
+      function reverseLines() {
+        const lines = outputText.value.split("\n");
+        lines.reverse();
+        outputText.value = lines.join("\n");
+        saveState();
+      }
+
+      // Shuffle lines
+      function shuffleLines() {
+        const lines = outputText.value.split("\n");
+        for (let i = lines.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [lines[i], lines[j]] = [lines[j], lines[i]];
+        }
+        outputText.value = lines.join("\n");
+        saveState();
+      }
+
+      // State persistence
+      function saveState() {
+        const state = {
+          input: inputText.value,
+          sortMode: sortMode.value,
+          removeDuplicates: removeDuplicates.checked,
+          trimWhitespace: trimWhitespace.checked,
+          removeEmpty: removeEmpty.checked,
+          caseInsensitive: caseInsensitive.checked
+        };
+        localStorage.setItem(LS_KEY, JSON.stringify(state));
+      }
+
+      function loadState() {
+        // Check URL hash first
+        if (window.location.hash.length > 1) {
+          try {
+            const data = decodeURIComponent(atob(window.location.hash.slice(1)));
+            const state = JSON.parse(data);
+            applyState(state);
+            return;
+          } catch (e) {
+            // Ignore invalid hash
+          }
+        }
+
+        // Load from localStorage
+        try {
+          const saved = localStorage.getItem(LS_KEY);
+          if (saved) {
+            const state = JSON.parse(saved);
+            applyState(state);
+          }
+        } catch (e) {
+          // Ignore
+        }
+      }
+
+      function applyState(state) {
+        if (state.input !== undefined) inputText.value = state.input;
+        if (state.sortMode !== undefined) sortMode.value = state.sortMode;
+        if (state.removeDuplicates !== undefined) removeDuplicates.checked = state.removeDuplicates;
+        if (state.trimWhitespace !== undefined) trimWhitespace.checked = state.trimWhitespace;
+        if (state.removeEmpty !== undefined) removeEmpty.checked = state.removeEmpty;
+        if (state.caseInsensitive !== undefined) caseInsensitive.checked = state.caseInsensitive;
+        processLines();
+      }
+
+      // URL state sharing
+      function shareState() {
+        const state = {
+          input: inputText.value,
+          sortMode: sortMode.value,
+          removeDuplicates: removeDuplicates.checked,
+          trimWhitespace: trimWhitespace.checked,
+          removeEmpty: removeEmpty.checked,
+          caseInsensitive: caseInsensitive.checked
+        };
+        const encoded = btoa(encodeURIComponent(JSON.stringify(state)));
+        const url = window.location.origin + window.location.pathname + "#" + encoded;
+
+        navigator.clipboard.writeText(url).then(() => {
+          const btn = document.getElementById("btnShare");
+          const originalText = btn.textContent;
+          btn.textContent = "✓ 已复制";
+          setTimeout(() => {
+            btn.textContent = originalText;
+          }, 1500);
+        });
+      }
+
+      // Event listeners
+      inputText.addEventListener("input", processLines);
+      sortMode.addEventListener("change", processLines);
+      removeDuplicates.addEventListener("change", processLines);
+      trimWhitespace.addEventListener("change", processLines);
+      removeEmpty.addEventListener("change", processLines);
+      caseInsensitive.addEventListener("change", processLines);
+
+      document.getElementById("btnReverse").addEventListener("click", reverseLines);
+      document.getElementById("btnShuffle").addEventListener("click", shuffleLines);
+
+      document.getElementById("btnPaste").addEventListener("click", async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          inputText.value = text;
+          processLines();
+        } catch (e) {
+          alert("无法访问剪贴板，请手动粘贴");
+        }
+      });
+
+      document.getElementById("btnClearInput").addEventListener("click", () => {
+        inputText.value = "";
+        processLines();
+      });
+
+      document.getElementById("btnCopy").addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(outputText.value);
+          const btn = document.getElementById("btnCopy");
+          const originalText = btn.textContent;
+          btn.textContent = "✓ 已复制";
+          setTimeout(() => {
+            btn.textContent = originalText;
+          }, 1500);
+        } catch (e) {
+          alert("复制失败");
+        }
+      });
+
+      document.getElementById("btnShare").addEventListener("click", shareState);
+
+      // Initialize
+      initTheme();
+      loadState();
+    </script>
+  </body>
+</html>

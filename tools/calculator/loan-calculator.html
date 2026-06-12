@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>贷款计算</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="贷款计算" />
+    <meta name="keywords" content="loan-calculator,calculator,tools" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link
+      rel="canonical"
+      href="https://tools.realtime-ai.chat/tools/calculator/loan-calculator.html"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="贷款计算" />
+    <meta property="og:description" content="贷款计算" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://tools.realtime-ai.chat/tools/calculator/loan-calculator.html"
+    />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="贷款计算" />
+    <meta name="twitter:description" content="贷款计算" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-input: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-yellow: #fbbf24;
+        --accent-purple: #a855f7;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --glow-green: rgb(16, 185, 129, 0.15);
+        --glow-red: rgb(244, 63, 94, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-input: #f5f5f5;
+        --bg-hover: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d5d5d5;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .container {
+        max-width: 450px;
+        width: 100%;
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .input-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+      .btn {
+        padding: 12px 24px;
+        background: var(--accent-cyan);
+        color: var(--bg-deep);
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+      }
+
+      .btn:hover {
+        background: #00dfc4;
+        box-shadow: 0 0 20px var(--glow-cyan);
+      }
+      .results {
+        background: #f7fafc;
+        padding: 20px;
+        border-radius: 10px;
+      }
+      .result-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .result-item:last-child {
+        border-bottom: none;
+      }
+      .result-value {
+        font-weight: bold;
+        color: #667eea;
+        font-size: 1.1rem;
+      }
+      .monthly {
+        font-size: 1.5rem;
+      }
+
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        padding: 8px 14px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        margin-bottom: 20px;
+      }
+      .breadcrumb a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      .breadcrumb a:hover {
+        color: var(--accent-cyan);
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+      <span id="theme-icon">🌙</span>
+    </button>
+
+    <nav class="breadcrumb">
+      <a href="../../index.html">首页</a>
+      <span>›</span>
+      贷款计算器
+    </nav>
+    <div class="container">
+      <h1>🏦 贷款计算</h1>
+      <div class="input-group">
+        <label>贷款金额 (元)</label>
+        <input type="number" id="principal" placeholder="例如: 1000000" />
+      </div>
+      <div class="input-group">
+        <label>年利率 (%)</label>
+        <input type="number" id="rate" placeholder="例如: 4.9" step="0.01" />
+      </div>
+      <div class="input-group">
+        <label>贷款年限 (年)</label>
+        <input type="number" id="years" placeholder="例如: 30" />
+      </div>
+      <button class="btn" onclick="calculate()">计算</button>
+      <div class="results">
+        <div class="result-item monthly">
+          <span>月供</span>
+          <span class="result-value" id="monthly">-</span>
+        </div>
+        <div class="result-item">
+          <span>利息总额</span>
+          <span class="result-value" id="totalInterest">-</span>
+        </div>
+        <div class="result-item">
+          <span>还款总额</span>
+          <span class="result-value" id="totalPayment">-</span>
+        </div>
+      </div>
+    </div>
+    <script>
+      function calculate() {
+        const P = parseFloat(document.getElementById("principal").value) || 0;
+        const annualRate = parseFloat(document.getElementById("rate").value) || 0;
+        const years = parseFloat(document.getElementById("years").value) || 0;
+        const r = annualRate / 100 / 12;
+        const n = years * 12;
+        if (P <= 0 || r <= 0 || n <= 0) return;
+        const monthly = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+        const totalPayment = monthly * n;
+        const totalInterest = totalPayment - P;
+        document.getElementById("monthly").textContent = "¥" + monthly.toFixed(2);
+        document.getElementById("totalInterest").textContent = "¥" + totalInterest.toFixed(2);
+        document.getElementById("totalPayment").textContent = "¥" + totalPayment.toFixed(2);
+      }
+
+      // Theme toggle
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", newTheme);
+        document.getElementById("theme-icon").textContent = newTheme === "light" ? "☀️" : "🌙";
+        localStorage.setItem("theme", newTheme);
+      }
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      if (savedTheme === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+        document.getElementById("theme-icon").textContent = "☀️";
+      }
+    </script>
+  </body>
+</html>

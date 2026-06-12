@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>方程求解器 - WebUtils</title>
+    <meta name="description" content="求解一元一次方程、一元二次方程" />
+    <meta name="keywords" content="方程求解 equation solver 一元二次方程 数学计算" />
+    <style>
+      :root {
+        --bg: #f8f9fa;
+        --card-bg: #fff;
+        --text: #212529;
+        --text-muted: #6c757d;
+        --border: #dee2e6;
+        --primary: #0d6efd;
+        --success: #198754;
+        --danger: #dc3545;
+        --shadow: 0 2px 8px rgb(0, 0, 0, 0.08);
+        --radius: 8px;
+      }
+      [data-theme="dark"] {
+        --bg: #0a0a0f;
+        --card-bg: #1a1a24;
+        --text: #e8e8ed;
+        --text-muted: #9898a4;
+        --border: #2a2a36;
+        --primary: #a855f7;
+        --success: #10b981;
+        --danger: #ef4444;
+        --shadow: 0 2px 8px rgb(0, 0, 0, 0.3);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 24px;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 700px;
+        margin: 0 auto;
+      }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: var(--primary);
+        text-decoration: none;
+      }
+      h1 {
+        font-size: 1.75rem;
+        margin: 0 0 8px;
+      }
+      .desc {
+        color: var(--text-muted);
+        margin: 0 0 24px;
+      }
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+      }
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        cursor: pointer;
+        font-size: 1.2rem;
+        z-index: 100;
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      .tab {
+        padding: 10px 20px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        cursor: pointer;
+        background: var(--card-bg);
+        color: var(--text);
+        font-size: 0.9rem;
+      }
+      .tab:hover {
+        border-color: var(--primary);
+      }
+      .tab.active {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+      .equation-form {
+        margin-bottom: 20px;
+      }
+      .equation-display {
+        font-size: 1.5rem;
+        text-align: center;
+        padding: 20px;
+        background: var(--bg);
+        border-radius: var(--radius);
+        margin-bottom: 20px;
+        font-family: "Times New Roman", serif;
+      }
+      .coefficients {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      .coef-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .coef-group label {
+        font-weight: 500;
+        font-size: 1.1rem;
+      }
+      .coef-group input {
+        width: 80px;
+        padding: 10px;
+        text-align: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 1rem;
+        background: var(--card-bg);
+        color: var(--text);
+      }
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: var(--radius);
+        cursor: pointer;
+        font-size: 1rem;
+      }
+      .btn.primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn.primary:hover {
+        opacity: 0.9;
+      }
+      .btn-row {
+        display: flex;
+        gap: 12px;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 20px;
+        background: var(--bg);
+        border-radius: var(--radius);
+      }
+      .result h3 {
+        margin: 0 0 12px;
+        font-size: 1rem;
+      }
+      .result-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 8px;
+      }
+      .result-detail {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+      .error {
+        color: var(--danger);
+      }
+      .formula-info {
+        margin-top: 20px;
+        padding: 16px;
+        background: var(--bg);
+        border-radius: var(--radius);
+        font-size: 0.85rem;
+      }
+      .formula-info h4 {
+        margin: 0 0 8px;
+      }
+      .formula-info code {
+        background: var(--card-bg);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: ui-monospace, monospace;
+      }
+      footer {
+        text-align: center;
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+      footer a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="../../index.html" class="back-link">← 返回工具列表</a>
+      <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+      <h1>方程求解器</h1>
+      <p class="desc">求解一元一次方程和一元二次方程</p>
+
+      <div class="card">
+        <div class="tabs">
+          <button class="tab active" onclick="switchType('linear')">一元一次方程</button>
+          <button class="tab" onclick="switchType('quadratic')">一元二次方程</button>
+        </div>
+
+        <div id="linearForm" class="equation-form">
+          <div class="equation-display">ax + b = 0</div>
+          <div class="coefficients">
+            <div class="coef-group">
+              <label>a =</label>
+              <input type="number" id="linear_a" value="2" step="any" />
+            </div>
+            <div class="coef-group">
+              <label>b =</label>
+              <input type="number" id="linear_b" value="6" step="any" />
+            </div>
+          </div>
+        </div>
+
+        <div id="quadraticForm" class="equation-form" style="display: none">
+          <div class="equation-display">ax² + bx + c = 0</div>
+          <div class="coefficients">
+            <div class="coef-group">
+              <label>a =</label>
+              <input type="number" id="quad_a" value="1" step="any" />
+            </div>
+            <div class="coef-group">
+              <label>b =</label>
+              <input type="number" id="quad_b" value="-5" step="any" />
+            </div>
+            <div class="coef-group">
+              <label>c =</label>
+              <input type="number" id="quad_c" value="6" step="any" />
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn primary" onclick="solve()">求解</button>
+        </div>
+
+        <div class="result" id="result" style="display: none">
+          <h3>解</h3>
+          <div class="result-value" id="resultValue"></div>
+          <div class="result-detail" id="resultDetail"></div>
+        </div>
+
+        <div class="formula-info" id="formulaInfo">
+          <h4>一元一次方程 ax + b = 0</h4>
+          <p>
+            解:
+            <code>x = -b/a</code>
+            (a ≠ 0)
+          </p>
+        </div>
+      </div>
+
+      <footer>
+        纯前端工具 · 无服务器 ·
+        <a href="../../index.html">WebUtils</a>
+      </footer>
+    </div>
+
+    <script>
+      let currentType = "linear";
+
+      function switchType(type) {
+        currentType = type;
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        document
+          .querySelector(`.tab:nth-child(${type === "linear" ? 1 : 2})`)
+          .classList.add("active");
+
+        document.getElementById("linearForm").style.display = type === "linear" ? "block" : "none";
+        document.getElementById("quadraticForm").style.display =
+          type === "quadratic" ? "block" : "none";
+        document.getElementById("result").style.display = "none";
+
+        const formulaInfo = document.getElementById("formulaInfo");
+        if (type === "linear") {
+          formulaInfo.innerHTML = `<h4>一元一次方程 ax + b = 0</h4><p>解: <code>x = -b/a</code> (a ≠ 0)</p>`;
+        } else {
+          formulaInfo.innerHTML = `<h4>一元二次方程 ax² + bx + c = 0</h4><p>判别式: <code>Δ = b² - 4ac</code></p><p>求根公式: <code>x = (-b ± √Δ) / 2a</code></p>`;
+        }
+      }
+
+      function solve() {
+        const resultEl = document.getElementById("result");
+        const valueEl = document.getElementById("resultValue");
+        const detailEl = document.getElementById("resultDetail");
+
+        if (currentType === "linear") {
+          const a = parseFloat(document.getElementById("linear_a").value);
+          const b = parseFloat(document.getElementById("linear_b").value);
+
+          if (a === 0) {
+            if (b === 0) {
+              valueEl.innerHTML = "无穷多解";
+              detailEl.textContent = "方程 0 = 0 对任意 x 成立";
+            } else {
+              valueEl.innerHTML = '<span class="error">无解</span>';
+              detailEl.textContent = `方程 ${b} = 0 不成立`;
+            }
+          } else {
+            const x = -b / a;
+            valueEl.textContent = `x = ${formatNumber(x)}`;
+            detailEl.innerHTML = `
+            方程: ${formatCoef(a)}x ${formatSign(b)} = 0<br>
+            解: x = -${formatNumber(b)} / ${formatNumber(a)} = ${formatNumber(x)}<br>
+            验证: ${formatNumber(a)} × ${formatNumber(x)} + ${formatNumber(b)} = ${formatNumber(a * x + b)}
+          `;
+          }
+        } else {
+          const a = parseFloat(document.getElementById("quad_a").value);
+          const b = parseFloat(document.getElementById("quad_b").value);
+          const c = parseFloat(document.getElementById("quad_c").value);
+
+          if (a === 0) {
+            valueEl.innerHTML = '<span class="error">a 不能为 0</span>';
+            detailEl.textContent = "这不是一个二次方程，请使用一元一次方程求解";
+          } else {
+            const delta = b * b - 4 * a * c;
+            let solutions;
+
+            if (delta > 0) {
+              const x1 = (-b + Math.sqrt(delta)) / (2 * a);
+              const x2 = (-b - Math.sqrt(delta)) / (2 * a);
+              valueEl.textContent = `x₁ = ${formatNumber(x1)}, x₂ = ${formatNumber(x2)}`;
+              solutions = "两个不相等的实根";
+            } else if (delta === 0) {
+              const x = -b / (2 * a);
+              valueEl.textContent = `x = ${formatNumber(x)}`;
+              solutions = "两个相等的实根（重根）";
+            } else {
+              const realPart = -b / (2 * a);
+              const imagPart = Math.sqrt(-delta) / (2 * a);
+              valueEl.textContent = `x₁ = ${formatNumber(realPart)} + ${formatNumber(imagPart)}i, x₂ = ${formatNumber(realPart)} - ${formatNumber(imagPart)}i`;
+              solutions = "两个共轭复根";
+            }
+
+            detailEl.innerHTML = `
+            方程: ${formatCoef(a)}x² ${formatSign(b)}x ${formatSign(c)} = 0<br>
+            判别式: Δ = ${formatNumber(b)}² - 4 × ${formatNumber(a)} × ${formatNumber(c)} = ${formatNumber(delta)}<br>
+            结论: ${solutions}
+          `;
+          }
+        }
+
+        resultEl.style.display = "block";
+      }
+
+      function formatNumber(n) {
+        if (Number.isInteger(n)) return n.toString();
+        return parseFloat(n.toFixed(6)).toString();
+      }
+
+      function formatCoef(n) {
+        if (n === 1) return "";
+        if (n === -1) return "-";
+        return n.toString();
+      }
+
+      function formatSign(n) {
+        return n >= 0 ? `+ ${Math.abs(n)}` : `- ${Math.abs(n)}`;
+      }
+
+      function toggleTheme() {
+        const html = document.documentElement;
+        const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        html.setAttribute("data-theme", next);
+        document.querySelector(".theme-toggle").textContent = next === "dark" ? "🌙" : "☀️";
+        localStorage.setItem("theme", next);
+      }
+      (function () {
+        const saved = localStorage.getItem("theme");
+        if (saved) {
+          document.documentElement.setAttribute("data-theme", saved);
+          document.querySelector(".theme-toggle").textContent = saved === "dark" ? "🌙" : "☀️";
+        }
+      })();
+    </script>
+  </body>
+</html>

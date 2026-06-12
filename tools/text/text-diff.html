@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>文本对比 Diff - WebUtils</title>
+
+    <!-- SEO Meta Tags -->
+    <meta
+      name="description"
+      content="智能文本对比工具，支持逐行对比、词级对比、字符级对比，清晰显示文本差异"
+    />
+    <meta name="keywords" content="文本对比,diff,文本差异,对比工具,text diff,compare" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://tools.realtime-ai.chat/tools/text/text-diff.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="文本对比 Diff - WebUtils" />
+    <meta property="og:description" content="智能文本对比工具，支持多种对比模式" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tools.realtime-ai.chat/tools/text/text-diff.html" />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="文本对比 Diff - WebUtils" />
+    <meta name="twitter:description" content="智能文本对比工具，支持多种对比模式" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <!-- JSON-LD BreadcrumbList Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "首页",
+            "item": "https://tools.realtime-ai.chat/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "文本工具",
+            "item": "https://tools.realtime-ai.chat/#text"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "文本对比",
+            "item": "https://tools.realtime-ai.chat/tools/text/text-diff.html"
+          }
+        ]
+      }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-input: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-yellow: #fbbf24;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --glow-green: rgb(16, 185, 129, 0.15);
+        --glow-red: rgb(244, 63, 94, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-input: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d5d5d5;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-card);
+        cursor: pointer;
+        font-size: 1.2rem;
+        z-index: 100;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        background: var(--bg-deep);
+        color: var(--text-primary);
+        min-height: 100vh;
+        line-height: 1.6;
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgb(0, 245, 212, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgb(0, 245, 212, 0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+
+      /* Breadcrumb Navigation */
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        padding: 8px 14px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        flex-wrap: wrap;
+      }
+
+      .breadcrumb a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      .breadcrumb a:hover {
+        color: var(--accent-cyan);
+      }
+
+      .breadcrumb-separator {
+        color: var(--text-muted);
+        user-select: none;
+      }
+
+      .breadcrumb-current {
+        color: var(--text-primary);
+        font-weight: 500;
+      }
+
+      .title-section {
+        flex: 1;
+      }
+
+      .title-section h1 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .title-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, var(--accent-cyan), #4cc9f0);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: var(--bg-deep);
+      }
+
+      .title-section .desc {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+
+      /* Main Card */
+      .main-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Toolbar */
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 2px;
+        background: var(--bg-surface);
+        border-radius: var(--radius-sm);
+        padding: 2px;
+      }
+
+      button {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 10px 16px;
+        background: transparent;
+        border: none;
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+      }
+
+      button:hover {
+        background: var(--bg-card);
+        color: var(--text-primary);
+      }
+
+      button.primary {
+        background: var(--accent-cyan);
+        color: var(--bg-deep);
+      }
+
+      button.primary:hover {
+        background: #00dfc4;
+        box-shadow: 0 0 20px var(--glow-cyan);
+      }
+
+      .btn-single {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+      }
+
+      .btn-single:hover {
+        border-color: var(--accent-cyan);
+        color: var(--accent-cyan);
+      }
+
+      /* Options */
+      .options {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 20px;
+        font-size: 0.85rem;
+      }
+
+      .options label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        cursor: pointer;
+      }
+
+      .options select {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+        cursor: pointer;
+      }
+
+      .options input[type="radio"] {
+        accent-color: var(--accent-cyan);
+        cursor: pointer;
+      }
+
+      /* Panels */
+      .panels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      @media (width <= 900px) {
+        .panels {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .panel-label {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      textarea {
+        flex: 1;
+        width: 100%;
+        min-height: 300px;
+        padding: 16px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        background: var(--bg-input);
+        border: 2px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        resize: vertical;
+        transition: all 0.2s ease;
+      }
+
+      textarea::placeholder {
+        color: var(--text-muted);
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 0 4px var(--glow-cyan);
+      }
+
+      /* Result Panel */
+      .result-panel {
+        background: var(--bg-input);
+        border: 2px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        min-height: 200px;
+        max-height: 500px;
+        overflow-y: auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        line-height: 1.8;
+      }
+
+      .result-panel pre {
+        margin: 0;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+      }
+
+      .diff-line {
+        padding: 2px 8px;
+        margin: 0 -16px;
+      }
+
+      .diff-added {
+        background: rgba(16, 185, 129, 0.15);
+        border-left: 3px solid var(--accent-green);
+        color: var(--accent-green);
+      }
+
+      .diff-removed {
+        background: rgba(244, 63, 94, 0.15);
+        border-left: 3px solid var(--accent-red);
+        color: var(--accent-red);
+        text-decoration: line-through;
+      }
+
+      .diff-unchanged {
+        color: var(--text-secondary);
+      }
+
+      /* Status */
+      .status {
+        padding: 12px 16px;
+        background: var(--bg-surface);
+        border-radius: var(--radius-md);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-secondary);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--text-muted);
+      }
+
+      .status-dot.active {
+        background: var(--accent-cyan);
+        box-shadow: 0 0 10px var(--glow-cyan);
+      }
+
+      /* Responsive */
+      @media (width <= 768px) {
+        .container {
+          padding: 16px;
+        }
+
+        .title-section h1 {
+          font-size: 1.2rem;
+        }
+
+        .toolbar {
+          gap: 8px;
+        }
+
+        button {
+          padding: 8px 12px;
+          font-size: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+      <span id="theme-icon">🌙</span>
+    </button>
+
+    <div class="container">
+      <div class="header">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="../../index.html">首页</a>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-current">文本对比</span>
+        </nav>
+
+        <div class="title-section">
+          <h1>
+            <span class="title-icon">📝</span>
+            文本对比 Diff
+          </h1>
+          <div class="desc">智能文本差异对比，支持多种对比模式</div>
+        </div>
+      </div>
+
+      <div class="main-card">
+        <div class="toolbar">
+          <div class="btn-group">
+            <button class="primary" onclick="compareTexts()">🔍 对比</button>
+            <button onclick="clearAll()">🗑️ 清空</button>
+            <button onclick="swapTexts()">🔄 交换</button>
+          </div>
+
+          <button class="btn-single" onclick="copyResult()">📋 复制结果</button>
+        </div>
+
+        <div class="options">
+          <label>
+            <strong>对比模式：</strong>
+          </label>
+          <label>
+            <input type="radio" name="diffMode" value="line" checked />
+            逐行对比
+          </label>
+          <label>
+            <input type="radio" name="diffMode" value="word" />
+            词级对比
+          </label>
+          <label>
+            <input type="radio" name="diffMode" value="char" />
+            字符级对比
+          </label>
+        </div>
+
+        <div class="panels">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-label">原始文本</span>
+            </div>
+            <textarea id="text1" placeholder="输入原始文本..."></textarea>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-label">新文本</span>
+            </div>
+            <textarea id="text2" placeholder="输入新文本..."></textarea>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-label">对比结果</span>
+          </div>
+          <div class="result-panel" id="result">
+            <pre class="diff-unchanged">点击"对比"按钮查看文本差异...</pre>
+          </div>
+        </div>
+
+        <div class="status">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">就绪</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/diff@5.1.0/dist/diff.min.js"></script>
+    <script>
+      // Theme toggle
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", newTheme);
+        document.getElementById("theme-icon").textContent = newTheme === "light" ? "☀️" : "🌙";
+        localStorage.setItem("theme", newTheme);
+      }
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      if (savedTheme === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+        document.getElementById("theme-icon").textContent = "☀️";
+      }
+
+      function setStatus(text, active = false) {
+        document.getElementById("statusText").textContent = text;
+        document.getElementById("statusDot").classList.toggle("active", active);
+      }
+
+      function compareTexts() {
+        const text1 = document.getElementById("text1").value;
+        const text2 = document.getElementById("text2").value;
+        const resultEl = document.getElementById("result");
+
+        if (!text1 && !text2) {
+          resultEl.innerHTML = '<pre class="diff-unchanged">请输入要对比的文本...</pre>';
+          setStatus("就绪");
+          return;
+        }
+
+        const diffMode = document.querySelector('input[name="diffMode"]:checked').value;
+        let diff;
+
+        setStatus("对比中...", true);
+
+        setTimeout(() => {
+          switch (diffMode) {
+            case "line":
+              diff = Diff.diffLines(text1, text2);
+              break;
+            case "word":
+              diff = Diff.diffWords(text1, text2);
+              break;
+            case "char":
+              diff = Diff.diffChars(text1, text2);
+              break;
+          }
+
+          let html = "<pre>";
+          let addedCount = 0;
+          let removedCount = 0;
+          let unchangedCount = 0;
+
+          diff.forEach((part) => {
+            const lines = part.value.split("\n");
+            lines.forEach((line, i) => {
+              if (i === lines.length - 1 && line === "") return;
+
+              let className = "diff-unchanged";
+              let prefix = "  ";
+
+              if (part.added) {
+                className = "diff-added";
+                prefix = "+ ";
+                addedCount++;
+              } else if (part.removed) {
+                className = "diff-removed";
+                prefix = "- ";
+                removedCount++;
+              } else {
+                unchangedCount++;
+              }
+
+              html += `<div class="diff-line ${className}">${escapeHtml(prefix + line)}</div>`;
+            });
+          });
+
+          html += "</pre>";
+          resultEl.innerHTML = html;
+
+          const total = addedCount + removedCount + unchangedCount;
+          setStatus(
+            `对比完成: ${addedCount} 处新增, ${removedCount} 处删除, ${unchangedCount} 处不变`,
+            false
+          );
+        }, 100);
+      }
+
+      function clearAll() {
+        document.getElementById("text1").value = "";
+        document.getElementById("text2").value = "";
+        document.getElementById("result").innerHTML =
+          '<pre class="diff-unchanged">点击"对比"按钮查看文本差异...</pre>';
+        setStatus("已清空");
+      }
+
+      function swapTexts() {
+        const text1 = document.getElementById("text1");
+        const text2 = document.getElementById("text2");
+        const temp = text1.value;
+        text1.value = text2.value;
+        text2.value = temp;
+        setStatus("已交换文本");
+      }
+
+      async function copyResult() {
+        const resultEl = document.getElementById("result");
+        const text = resultEl.textContent;
+
+        try {
+          await navigator.clipboard.writeText(text);
+          setStatus("✅ 已复制到剪贴板", true);
+          setTimeout(() => setStatus("就绪"), 2000);
+        } catch (err) {
+          setStatus("❌ 复制失败");
+        }
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Auto-compare on mode change
+      document.querySelectorAll('input[name="diffMode"]').forEach((radio) => {
+        radio.addEventListener("change", () => {
+          const text1 = document.getElementById("text1").value;
+          const text2 = document.getElementById("text2").value;
+          if (text1 || text2) {
+            compareTexts();
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

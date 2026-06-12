@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文本模板填充器 - WebUtils</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="文本模板填充器 - WebUtils" />
+    <meta name="keywords" content="template-filler,text,tools,webutils" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://tools.realtime-ai.chat/tools/text/template-filler.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="文本模板填充器 - WebUtils" />
+    <meta property="og:description" content="文本模板填充器 - WebUtils" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://tools.realtime-ai.chat/tools/text/template-filler.html"
+    />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="文本模板填充器 - WebUtils" />
+    <meta name="twitter:description" content="文本模板填充器 - WebUtils" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-input: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-yellow: #fbbf24;
+        --accent-purple: #a855f7;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --glow-green: rgb(16, 185, 129, 0.15);
+        --glow-red: rgb(244, 63, 94, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-input: #f5f5f5;
+        --bg-hover: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d5d5d5;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-card);
+        cursor: pointer;
+        font-size: 1.2rem;
+        z-index: 100;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      :root {
+        --primary: #06b6d4;
+      }
+      body {
+        padding: 1rem;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.5rem;
+      }
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      @media (max-width: 900px) {
+        .main-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .panel {
+        background: var(--pico-card-background-color);
+        border-radius: 8px;
+        padding: 1rem;
+      }
+      .panel-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .panel-title small {
+        font-weight: normal;
+        color: var(--pico-muted-color);
+      }
+      textarea {
+        width: 100%;
+        min-height: 200px;
+        font-family: monospace;
+        font-size: 0.9rem;
+      }
+      .variables {
+        margin-top: 1rem;
+      }
+      .var-item {
+        display: grid;
+        grid-template-columns: 120px 1fr auto;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        align-items: center;
+      }
+      .var-item input {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.6rem;
+      }
+      .var-item .var-name {
+        font-family: monospace;
+        color: var(--primary);
+        font-size: 0.85rem;
+      }
+      .var-item button {
+        padding: 0.4rem 0.6rem;
+      }
+      .btn-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+      .templates {
+        margin-bottom: 1rem;
+      }
+      .template-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .template-btn {
+        padding: 0.3rem 0.75rem;
+        font-size: 0.85rem;
+        background: var(--pico-muted-border-color);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .template-btn:hover {
+        background: var(--primary);
+        color: white;
+      }
+      .output-section {
+        margin-top: 1rem;
+      }
+      .output-section textarea {
+        min-height: 150px;
+      }
+      .batch-section {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--pico-muted-border-color);
+      }
+      .batch-data {
+        width: 100%;
+        min-height: 100px;
+        font-family: monospace;
+        font-size: 0.85rem;
+      }
+      .batch-output {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .batch-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+        font-family: monospace;
+        font-size: 0.85rem;
+        white-space: pre-wrap;
+      }
+      .help-text {
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+        margin-top: 0.25rem;
+      }
+
+      .breadcrumb {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+      }
+      .breadcrumb a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+      <span id="theme-icon">🌙</span>
+    </button>
+
+    <nav class="breadcrumb">
+      <a href="../../index.html">首页</a>
+      <span>›</span>
+      文本模板填充器
+    </nav>
+    <div class="container">
+      <header>
+        <h1>📋 文本模板填充器</h1>
+        <button id="themeToggle" class="outline">🌙</button>
+      </header>
+
+      <div class="templates">
+        <div class="template-list">
+          <button class="template-btn" data-template="email">邮件模板</button>
+          <button class="template-btn" data-template="sql">SQL 语句</button>
+          <button class="template-btn" data-template="code">代码模板</button>
+          <button class="template-btn" data-template="message">通知消息</button>
+          <button class="template-btn" data-template="url">URL 构建</button>
+        </div>
+      </div>
+
+      <div class="main-grid">
+        <div class="panel">
+          <div class="panel-title">
+            模板
+            <small>使用 {{变量名}} 定义变量</small>
+          </div>
+          <textarea id="templateInput" placeholder="输入模板，使用 {{变量名}} 作为占位符...">
+尊敬的 {{name}}：
+
+您好！感谢您使用我们的服务。
+
+您的订单号：{{orderNo}}
+订单金额：¥{{amount}}
+下单时间：{{datetime}}
+
+如有问题，请联系客服。
+
+祝好！
+{{company}}</textarea
+          >
+
+          <div class="variables" id="variables">
+            <div class="panel-title">变量值</div>
+          </div>
+
+          <div class="btn-row">
+            <button onclick="fillTemplate()">填充模板</button>
+            <button onclick="clearVars()" class="outline">清空变量</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">输出结果</div>
+          <textarea id="output" readonly placeholder="填充后的文本将显示在这里..."></textarea>
+
+          <div class="btn-row">
+            <button onclick="copyOutput()">📋 复制</button>
+            <button onclick="downloadOutput()" class="outline">💾 下载</button>
+          </div>
+
+          <div class="batch-section">
+            <div class="panel-title">
+              批量填充
+              <small>CSV 格式，首行为变量名</small>
+            </div>
+            <textarea
+              class="batch-data"
+              id="batchData"
+              placeholder="name,orderNo,amount,datetime,company
+张三,ORD001,99.00,2024-01-15,示例公司
+李四,ORD002,199.00,2024-01-16,示例公司"
+            ></textarea>
+            <div class="btn-row">
+              <button onclick="batchFill()">批量生成</button>
+              <button onclick="copyBatch()" class="outline">📋 复制全部</button>
+              <button onclick="downloadBatch()" class="outline">💾 下载</button>
+            </div>
+            <div class="batch-output" id="batchOutput"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const presetTemplates = {
+        email: `尊敬的 {{name}}：
+
+您好！感谢您使用我们的服务。
+
+您的订单号：{{orderNo}}
+订单金额：¥{{amount}}
+
+如有问题，请联系客服。
+
+祝好！
+{{company}}`,
+        sql: `INSERT INTO {{table}} ({{columns}}) VALUES ({{values}});
+
+SELECT * FROM {{table}} WHERE {{condition}};
+
+UPDATE {{table}} SET {{field}} = '{{value}}' WHERE id = {{id}};`,
+        code: `/**
+ * {{description}}
+ * @param {{paramType}} {{paramName}} - {{paramDesc}}
+ * @returns {{returnType}}
+ */
+function {{functionName}}({{paramName}}) {
+    // TODO: implement
+    return {{defaultReturn}};
+}`,
+        message: "【{{appName}}】您的验证码是 {{code}}，{{minutes}} 分钟内有效，请勿泄露给他人。",
+        url: "{{protocol}}://{{domain}}/{{path}}?id={{id}}&token={{token}}&timestamp={{timestamp}}"
+      };
+
+      let variables = {};
+
+      function parseVariables(template) {
+        const regex = /\{\{(\w+)\}\}/g;
+        const vars = new Set();
+        let match;
+        while ((match = regex.exec(template)) !== null) {
+          vars.add(match[1]);
+        }
+        return [...vars];
+      }
+
+      function renderVariables() {
+        const template = document.getElementById("templateInput").value;
+        const vars = parseVariables(template);
+        const container = document.getElementById("variables");
+
+        // Keep existing values
+        const oldVars = { ...variables };
+        variables = {};
+
+        let html = '<div class="panel-title">变量值</div>';
+        vars.forEach((v) => {
+          variables[v] = oldVars[v] || "";
+          html += `
+                    <div class="var-item">
+                        <span class="var-name">{{${v}}}</span>
+                        <input type="text" data-var="${v}" value="${escapeHtml(variables[v])}" placeholder="输入值...">
+                        <button onclick="insertNow('${v}')" title="插入当前时间">⏰</button>
+                    </div>
+                `;
+        });
+
+        if (vars.length === 0) {
+          html += '<div class="help-text">模板中未发现变量，请使用 {{变量名}} 格式定义</div>';
+        }
+
+        container.innerHTML = html;
+
+        // Add listeners
+        container.querySelectorAll("input").forEach((input) => {
+          input.addEventListener("input", (e) => {
+            variables[e.target.dataset.var] = e.target.value;
+            fillTemplate();
+          });
+        });
+      }
+
+      function fillTemplate() {
+        let template = document.getElementById("templateInput").value;
+        let output = template;
+
+        for (const [key, value] of Object.entries(variables)) {
+          output = output.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
+        }
+
+        document.getElementById("output").value = output;
+      }
+
+      window.insertNow = function (varName) {
+        const now = new Date();
+        const formatted = now.toLocaleString("zh-CN");
+        variables[varName] = formatted;
+        document.querySelector(`input[data-var="${varName}"]`).value = formatted;
+        fillTemplate();
+      };
+
+      window.clearVars = function () {
+        for (const key in variables) {
+          variables[key] = "";
+        }
+        renderVariables();
+        fillTemplate();
+      };
+
+      window.copyOutput = function () {
+        navigator.clipboard.writeText(document.getElementById("output").value);
+        event.target.textContent = "✓ 已复制";
+        setTimeout(() => (event.target.textContent = "📋 复制"), 2000);
+      };
+
+      window.downloadOutput = function () {
+        const blob = new Blob([document.getElementById("output").value], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "output.txt";
+        a.click();
+      };
+
+      function parseCSV(csv) {
+        const lines = csv.trim().split("\n");
+        if (lines.length < 2) return [];
+
+        const headers = lines[0].split(",").map((h) => h.trim());
+        const data = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(",").map((v) => v.trim());
+          const row = {};
+          headers.forEach((h, j) => (row[h] = values[j] || ""));
+          data.push(row);
+        }
+
+        return data;
+      }
+
+      window.batchFill = function () {
+        const template = document.getElementById("templateInput").value;
+        const csvData = document.getElementById("batchData").value;
+        const data = parseCSV(csvData);
+
+        if (data.length === 0) {
+          document.getElementById("batchOutput").innerHTML =
+            '<div class="help-text">请输入有效的 CSV 数据</div>';
+          return;
+        }
+
+        const results = data.map((row, i) => {
+          let output = template;
+          for (const [key, value] of Object.entries(row)) {
+            output = output.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
+          }
+          return output;
+        });
+
+        document.getElementById("batchOutput").innerHTML = results
+          .map(
+            (r, i) => `<div class="batch-item"><strong>#${i + 1}</strong>\n${escapeHtml(r)}</div>`
+          )
+          .join("");
+
+        window.batchResults = results;
+      };
+
+      window.copyBatch = function () {
+        if (window.batchResults) {
+          navigator.clipboard.writeText(window.batchResults.join("\n\n---\n\n"));
+          event.target.textContent = "✓ 已复制";
+          setTimeout(() => (event.target.textContent = "📋 复制全部"), 2000);
+        }
+      };
+
+      window.downloadBatch = function () {
+        if (window.batchResults) {
+          const blob = new Blob([window.batchResults.join("\n\n---\n\n")], { type: "text/plain" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "batch_output.txt";
+          a.click();
+        }
+      };
+
+      window.escapeHtml = function (str) {
+        if (!str) return "";
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      };
+
+      // Template presets
+      document.querySelectorAll(".template-btn").forEach((btn) => {
+        btn.onclick = () => {
+          document.getElementById("templateInput").value = presetTemplates[btn.dataset.template];
+          renderVariables();
+          fillTemplate();
+        };
+      });
+
+      // Auto parse on template change
+      document.getElementById("templateInput").addEventListener("input", () => {
+        renderVariables();
+        fillTemplate();
+      });
+
+      // Theme toggle
+      const theme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", theme);
+      document.getElementById("themeToggle").textContent = theme === "dark" ? "☀️" : "🌙";
+      document.getElementById("themeToggle").onclick = () => {
+        const next =
+          document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        document.getElementById("themeToggle").textContent = next === "dark" ? "☀️" : "🌙";
+      };
+
+      // Initialize
+      renderVariables();
+
+      // Theme toggle
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", newTheme);
+        document.getElementById("theme-icon").textContent = newTheme === "light" ? "☀️" : "🌙";
+        localStorage.setItem("theme", newTheme);
+      }
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      if (savedTheme === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+        document.getElementById("theme-icon").textContent = "☀️";
+      }
+    </script>
+  </body>
+</html>

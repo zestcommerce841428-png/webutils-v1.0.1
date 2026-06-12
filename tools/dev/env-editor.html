@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>环境变量编辑器 - WebUtils</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="环境变量编辑器 - WebUtils" />
+    <meta name="keywords" content="env-editor,dev,tools,webutils" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://tools.realtime-ai.chat/tools/dev/env-editor.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="环境变量编辑器 - WebUtils" />
+    <meta property="og:description" content="环境变量编辑器 - WebUtils" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tools.realtime-ai.chat/tools/dev/env-editor.html" />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="环境变量编辑器 - WebUtils" />
+    <meta name="twitter:description" content="环境变量编辑器 - WebUtils" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-input: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-yellow: #fbbf24;
+        --accent-purple: #a855f7;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --glow-green: rgb(16, 185, 129, 0.15);
+        --glow-red: rgb(244, 63, 94, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-input: #f5f5f5;
+        --bg-hover: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d5d5d5;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #12121a;
+        --bg-tertiary: #1a1a25;
+        --text-primary: #fff;
+        --text-secondary: #88a;
+        --accent: #6366f1;
+        --border: #2a2a3a;
+        --success: #22c55e;
+        --danger: #ef4444;
+      }
+      [data-theme="light"] {
+        --bg-primary: #f8fafc;
+        --bg-secondary: #fff;
+        --bg-tertiary: #f1f5f9;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --border: #e2e8f0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+      }
+      .header {
+        background: linear-gradient(135deg, #10b981, #059669);
+        padding: 2rem;
+        text-align: center;
+      }
+      .header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+      }
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        max-width: 1200px;
+        margin: 0 auto 1rem;
+      }
+      .back-link {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+      }
+      .theme-toggle {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        color: white;
+        cursor: pointer;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .editor-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+      @media (max-width: 900px) {
+        .editor-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .editor-box h3 {
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      textarea {
+        width: 100%;
+        min-height: 300px;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-family: Monaco, Menlo, monospace;
+        font-size: 0.9rem;
+        resize: vertical;
+      }
+      .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+      }
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+      .btn-danger {
+        background: var(--danger);
+        color: white;
+      }
+      .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+      }
+      .btn-sm {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.85rem;
+      }
+      .env-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .env-table th,
+      .env-table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      .env-table th {
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+      .env-table input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 0.25rem;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-family: monospace;
+      }
+      .env-table .key-col {
+        width: 35%;
+      }
+      .env-table .value-col {
+        width: 55%;
+      }
+      .env-table .action-col {
+        width: 10%;
+        text-align: center;
+      }
+      .add-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+      .add-row input {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 0.25rem;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-family: monospace;
+      }
+      .btn-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+      .format-options {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+      .format-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .format-option input[type="radio"] {
+        accent-color: var(--accent);
+      }
+      .toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--success);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .toast.show {
+        opacity: 1;
+      }
+      .stats {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: normal;
+      }
+
+      .breadcrumb {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+      }
+      .breadcrumb a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumb">
+      <a href="../../index.html">首页</a>
+      <span>›</span>
+      .env 文件编辑器
+    </nav>
+    <div class="header">
+      <div class="nav">
+        <a href="../../index.html" class="back-link">← 返回首页</a>
+        <button class="theme-toggle" onclick="toggleTheme()">🌓 主题</button>
+      </div>
+      <h1>📝 环境变量编辑器</h1>
+      <p>可视化编辑.env环境变量文件</p>
+    </div>
+    <div class="container">
+      <div class="editor-grid">
+        <div class="card editor-box">
+          <h3>
+            .env 文件内容
+            <span class="stats" id="textStats">0 变量</span>
+          </h3>
+          <textarea
+            id="envText"
+            placeholder="粘贴.env文件内容或手动输入...
+# 数据库配置
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=myapp
+
+# API配置  
+API_KEY=your_api_key_here
+API_SECRET=your_secret"
+            oninput="parseEnv()"
+          >
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=secret123
+DB_NAME=myapp
+
+API_URL=https://api.example.com
+API_KEY=sk_test_abc123
+API_SECRET=your_secret_key
+
+NODE_ENV=development
+DEBUG=true
+PORT=3000</textarea
+          >
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="parseEnv()">解析</button>
+            <button class="btn btn-secondary" onclick="sortEnv()">排序</button>
+            <button class="btn btn-secondary" onclick="copyText()">复制</button>
+          </div>
+        </div>
+
+        <div class="card editor-box">
+          <h3>
+            可视化编辑
+            <span class="stats" id="tableStats">0 变量</span>
+          </h3>
+          <div style="max-height: 400px; overflow-y: auto">
+            <table class="env-table" id="envTable">
+              <thead>
+                <tr>
+                  <th class="key-col">变量名</th>
+                  <th class="value-col">值</th>
+                  <th class="action-col">操作</th>
+                </tr>
+              </thead>
+              <tbody id="envTableBody"></tbody>
+            </table>
+          </div>
+          <div class="add-row">
+            <input
+              type="text"
+              id="newKey"
+              placeholder="变量名"
+              onkeypress="if (event.key === 'Enter') addVar();"
+            />
+            <input
+              type="text"
+              id="newValue"
+              placeholder="值"
+              onkeypress="if (event.key === 'Enter') addVar();"
+            />
+            <button class="btn btn-success btn-sm" onclick="addVar()">+ 添加</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 1rem">导出格式</h3>
+        <div class="format-options">
+          <label class="format-option">
+            <input type="radio" name="format" value="env" checked />
+            .env 格式
+          </label>
+          <label class="format-option">
+            <input type="radio" name="format" value="json" />
+            JSON 格式
+          </label>
+          <label class="format-option">
+            <input type="radio" name="format" value="yaml" />
+            YAML 格式
+          </label>
+          <label class="format-option">
+            <input type="radio" name="format" value="shell" />
+            Shell export
+          </label>
+          <label class="format-option">
+            <input type="radio" name="format" value="docker" />
+            Docker -e 参数
+          </label>
+        </div>
+        <textarea
+          id="exportOutput"
+          style="min-height: 150px"
+          readonly
+          placeholder="选择格式后点击导出"
+        ></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="exportEnv()">导出</button>
+          <button class="btn btn-success" onclick="copyExport()">复制导出内容</button>
+          <button class="btn btn-secondary" onclick="downloadExport()">下载文件</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">已复制到剪贴板</div>
+
+    <script>
+      let envVars = [];
+
+      function parseEnv() {
+        const text = document.getElementById("envText").value;
+        envVars = [];
+
+        const lines = text.split("\n");
+        lines.forEach((line) => {
+          line = line.trim();
+          if (!line || line.startsWith("#")) return;
+
+          const eqIndex = line.indexOf("=");
+          if (eqIndex > 0) {
+            const key = line.substring(0, eqIndex).trim();
+            let value = line.substring(eqIndex + 1).trim();
+            // Remove surrounding quotes
+            if (
+              (value.startsWith('"') && value.endsWith('"')) ||
+              (value.startsWith("'") && value.endsWith("'"))
+            ) {
+              value = value.slice(1, -1);
+            }
+            envVars.push({ key, value });
+          }
+        });
+
+        renderTable();
+        updateStats();
+      }
+
+      function renderTable() {
+        const tbody = document.getElementById("envTableBody");
+        tbody.innerHTML = envVars
+          .map(
+            (v, i) => `
+                <tr>
+                    <td class="key-col">
+                        <input type="text" value="${escapeHtml(v.key)}" onchange="updateVar(${i}, 'key', this.value)">
+                    </td>
+                    <td class="value-col">
+                        <input type="text" value="${escapeHtml(v.value)}" onchange="updateVar(${i}, 'value', this.value)">
+                    </td>
+                    <td class="action-col">
+                        <button class="btn btn-danger btn-sm" onclick="removeVar(${i})">×</button>
+                    </td>
+                </tr>
+            `
+          )
+          .join("");
+      }
+
+      window.escapeHtml = function (text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      };
+
+      window.updateVar = function (index, field, value) {
+        envVars[index][field] = value;
+        syncToText();
+      };
+
+      window.removeVar = function (index) {
+        envVars.splice(index, 1);
+        renderTable();
+        syncToText();
+      };
+
+      window.addVar = function () {
+        const key = document.getElementById("newKey").value.trim();
+        const value = document.getElementById("newValue").value.trim();
+
+        if (!key) {
+          alert("请输入变量名");
+          return;
+        }
+
+        envVars.push({ key, value });
+        document.getElementById("newKey").value = "";
+        document.getElementById("newValue").value = "";
+        renderTable();
+        syncToText();
+      };
+
+      function syncToText() {
+        const text = envVars
+          .map((v) => {
+            const needsQuote = v.value.includes(" ") || v.value.includes("#");
+            const value = needsQuote ? `"${v.value}"` : v.value;
+            return `${v.key}=${value}`;
+          })
+          .join("\n");
+
+        document.getElementById("envText").value = text;
+        updateStats();
+      }
+
+      window.sortEnv = function () {
+        envVars.sort((a, b) => a.key.localeCompare(b.key));
+        renderTable();
+        syncToText();
+      };
+
+      function updateStats() {
+        const count = envVars.length;
+        document.getElementById("textStats").textContent = `${count} 变量`;
+        document.getElementById("tableStats").textContent = `${count} 变量`;
+      }
+
+      window.exportEnv = function () {
+        const format = document.querySelector('input[name="format"]:checked').value;
+        let output = "";
+
+        switch (format) {
+          case "env":
+            output = envVars.map((v) => `${v.key}=${v.value}`).join("\n");
+            break;
+          case "json":
+            const obj = {};
+            envVars.forEach((v) => (obj[v.key] = v.value));
+            output = JSON.stringify(obj, null, 2);
+            break;
+          case "yaml":
+            output = envVars.map((v) => `${v.key}: "${v.value}"`).join("\n");
+            break;
+          case "shell":
+            output = envVars.map((v) => `export ${v.key}="${v.value}"`).join("\n");
+            break;
+          case "docker":
+            output = envVars.map((v) => `-e ${v.key}="${v.value}"`).join(" \\\n  ");
+            break;
+        }
+
+        document.getElementById("exportOutput").value = output;
+      };
+
+      window.copyText = function () {
+        navigator.clipboard.writeText(document.getElementById("envText").value);
+        showToast();
+      };
+
+      window.copyExport = function () {
+        const output = document.getElementById("exportOutput").value;
+        if (!output) {
+          alert("请先点击导出");
+          return;
+        }
+        navigator.clipboard.writeText(output);
+        showToast();
+      };
+
+      window.downloadExport = function () {
+        const output = document.getElementById("exportOutput").value;
+        if (!output) {
+          alert("请先点击导出");
+          return;
+        }
+
+        const format = document.querySelector('input[name="format"]:checked').value;
+        const extensions = {
+          env: ".env",
+          json: ".json",
+          yaml: ".yaml",
+          shell: ".sh",
+          docker: ".txt"
+        };
+
+        const blob = new Blob([output], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "environment" + extensions[format];
+        link.click();
+      };
+
+      function showToast() {
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 2000);
+      }
+
+      // Initialize
+      parseEnv();
+
+      window.toggleTheme = function () {
+        const t = document.body.getAttribute("data-theme") === "light" ? "dark" : "light";
+        document.body.setAttribute("data-theme", t);
+        localStorage.setItem("theme", t);
+      };
+      document.body.setAttribute("data-theme", localStorage.getItem("theme") || "dark");
+    </script>
+  </body>
+</html>

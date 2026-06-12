@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>每日饮水量计算器 - WebUtils</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="每日饮水量计算器 - WebUtils" />
+    <meta name="keywords" content="water-intake,health,tools,webutils" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://tools.realtime-ai.chat/tools/health/water-intake.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="每日饮水量计算器 - WebUtils" />
+    <meta property="og:description" content="每日饮水量计算器 - WebUtils" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://tools.realtime-ai.chat/tools/health/water-intake.html"
+    />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="每日饮水量计算器 - WebUtils" />
+    <meta name="twitter:description" content="每日饮水量计算器 - WebUtils" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-input: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-yellow: #fbbf24;
+        --accent-purple: #a855f7;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --glow-green: rgb(16, 185, 129, 0.15);
+        --glow-red: rgb(244, 63, 94, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-input: #f5f5f5;
+        --bg-hover: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d5d5d5;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-card);
+        cursor: pointer;
+        font-size: 1.2rem;
+        z-index: 100;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --bg: #0a0a0f;
+        --card: #12121a;
+        --border: #2a2a3a;
+        --text: #fff;
+        --text2: #888;
+        --accent: #3b82f6;
+        --accent2: #06b6d4;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f5f5f5;
+          --card: #fff;
+          --border: #e0e0e0;
+          --text: #333;
+          --text2: #666;
+        }
+      }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 8px;
+        font-size: 1.8rem;
+      }
+      .subtitle {
+        text-align: center;
+        color: var(--text2);
+        margin-bottom: 24px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      .card-title {
+        font-size: 1rem;
+        color: var(--text2);
+        margin-bottom: 16px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+        color: var(--text2);
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 1rem;
+      }
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .result-hero {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        padding: 32px;
+        border-radius: 12px;
+        text-align: center;
+        color: white;
+        margin-bottom: 20px;
+      }
+      .result-hero .label {
+        opacity: 0.9;
+        margin-bottom: 8px;
+      }
+      .result-hero .big {
+        font-size: 3rem;
+        font-weight: 700;
+      }
+      .result-hero .unit {
+        font-size: 1rem;
+        opacity: 0.8;
+      }
+      .result-hero .sub {
+        margin-top: 12px;
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+      .water-visual {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin: 24px 0;
+        flex-wrap: wrap;
+      }
+      .glass {
+        width: 40px;
+        height: 60px;
+        background: linear-gradient(to top, var(--accent) var(--fill), transparent var(--fill));
+        border: 2px solid var(--accent);
+        border-radius: 4px 4px 8px 8px;
+        position: relative;
+      }
+      .glass::before {
+        content: "";
+        position: absolute;
+        top: -8px;
+        left: -4px;
+        right: -4px;
+        height: 8px;
+        background: var(--border);
+        border-radius: 4px 4px 0 0;
+      }
+      .result-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        background: var(--bg);
+        border-radius: 8px;
+        margin-bottom: 8px;
+      }
+      .result-row .label {
+        color: var(--text2);
+      }
+      .result-row .value {
+        font-weight: 600;
+      }
+      .tracker {
+        margin-top: 20px;
+      }
+      .tracker-title {
+        font-size: 0.9rem;
+        color: var(--text2);
+        margin-bottom: 12px;
+      }
+      .tracker-progress {
+        height: 24px;
+        background: var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+      }
+      .tracker-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        border-radius: 12px;
+        transition: width 0.3s;
+      }
+      .tracker-text {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .tracker-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
+      .tracker-btn {
+        padding: 10px 16px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--text);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+      .tracker-btn:hover {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: white;
+      }
+      .tracker-btn.reset {
+        background: transparent;
+        border-color: #ef4444;
+        color: #ef4444;
+      }
+      .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      @media (max-width: 768px) {
+        .tips-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .tip {
+        padding: 16px;
+        background: var(--bg);
+        border-radius: 8px;
+      }
+      .tip-icon {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+      }
+      .tip-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+      }
+      .tip-text {
+        font-size: 0.8rem;
+        color: var(--text2);
+      }
+      .schedule {
+        margin-top: 16px;
+      }
+      .schedule-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        background: var(--bg);
+        border-radius: 8px;
+        margin-bottom: 8px;
+      }
+      .schedule-time {
+        font-weight: 600;
+        color: var(--accent);
+        min-width: 60px;
+      }
+      .schedule-amount {
+        color: var(--text2);
+        font-size: 0.9rem;
+      }
+      .note {
+        margin-top: 16px;
+        padding: 12px;
+        background: var(--bg);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: var(--text2);
+      }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .back-link:hover {
+        text-decoration: underline;
+      }
+
+      .breadcrumb {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+      }
+      .breadcrumb a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+      <span id="theme-icon">🌙</span>
+    </button>
+
+    <nav class="breadcrumb">
+      <a href="../../index.html">首页</a>
+      <span>›</span>
+      每日饮水量计算器
+    </nav>
+    <div class="container">
+      <a href="../../index.html" class="back-link">← 返回</a>
+      <h1>每日饮水量计算器</h1>
+      <p class="subtitle">计算个人每日所需水分摄入量</p>
+
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">个人信息</div>
+          <div class="form-group">
+            <label>体重 (kg)</label>
+            <input type="number" id="weight" value="65" min="30" max="200" oninput="calculate()" />
+          </div>
+          <div class="form-group">
+            <label>运动量</label>
+            <select id="activity" onchange="calculate()">
+              <option value="1">久坐（几乎不运动）</option>
+              <option value="1.2">轻度（每周1-2次轻运动）</option>
+              <option value="1.4" selected>中度（每周3-5次运动）</option>
+              <option value="1.6">高强度（每天运动）</option>
+              <option value="1.8">专业运动员</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>气候环境</label>
+            <select id="climate" onchange="calculate()">
+              <option value="1">温和</option>
+              <option value="1.1">炎热</option>
+              <option value="1.2">非常炎热/干燥</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>特殊情况</label>
+            <select id="special" onchange="calculate()">
+              <option value="0">无</option>
+              <option value="500">孕期（+500ml）</option>
+              <option value="700">哺乳期（+700ml）</option>
+              <option value="300">发烧/生病（+300ml）</option>
+            </select>
+          </div>
+
+          <div class="tracker">
+            <div class="tracker-title">今日饮水追踪</div>
+            <div class="tracker-progress">
+              <div class="tracker-fill" id="trackerFill" style="width: 0%"></div>
+              <div class="tracker-text" id="trackerText">0 / 0 ml</div>
+            </div>
+            <div class="tracker-buttons">
+              <button class="tracker-btn" onclick="addWater(250)">+250ml</button>
+              <button class="tracker-btn" onclick="addWater(500)">+500ml</button>
+              <button class="tracker-btn" onclick="addWater(100)">+100ml</button>
+              <button class="tracker-btn reset" onclick="resetTracker()">重置</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="result-hero">
+            <div class="label">每日建议饮水量</div>
+            <div class="big">
+              <span id="totalWater">0</span>
+              <span class="unit">ml</span>
+            </div>
+            <div class="sub" id="glassCount">约 0 杯 (250ml/杯)</div>
+            <div class="water-visual" id="waterVisual"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">饮水量详情</div>
+            <div class="result-row">
+              <span class="label">基础需求</span>
+              <span class="value" id="baseWater">0 ml</span>
+            </div>
+            <div class="result-row">
+              <span class="label">运动补充</span>
+              <span class="value" id="activityWater">0 ml</span>
+            </div>
+            <div class="result-row">
+              <span class="label">气候调整</span>
+              <span class="value" id="climateWater">0 ml</span>
+            </div>
+            <div class="result-row">
+              <span class="label">特殊情况</span>
+              <span class="value" id="specialWater">0 ml</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">建议饮水时间表</div>
+            <div class="schedule" id="schedule"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">饮水小贴士</div>
+        <div class="tips-grid">
+          <div class="tip">
+            <div class="tip-icon">🌅</div>
+            <div class="tip-title">晨起一杯水</div>
+            <div class="tip-text">早上起床后喝一杯温水，有助于唤醒身体，促进肠道蠕动</div>
+          </div>
+          <div class="tip">
+            <div class="tip-icon">🍽️</div>
+            <div class="tip-title">餐前半小时</div>
+            <div class="tip-text">饭前30分钟喝水有助于消化，但避免边吃边喝大量水</div>
+          </div>
+          <div class="tip">
+            <div class="tip-icon">⏰</div>
+            <div class="tip-title">少量多次</div>
+            <div class="tip-text">不要等到口渴才喝水，每小时喝150-200ml效果更好</div>
+          </div>
+          <div class="tip">
+            <div class="tip-icon">🌙</div>
+            <div class="tip-title">睡前适量</div>
+            <div class="tip-text">睡前1-2小时适量饮水，避免夜间频繁起夜</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        以上建议基于一般健康成人，实际需求因人而异。如有肾脏疾病或其他健康问题，请咨询医生确定适合您的饮水量。
+      </div>
+    </div>
+
+    <script>
+      const LS_KEY = "water_tracker";
+      let dailyTarget = 2000;
+      let currentIntake = 0;
+
+      function loadTracker() {
+        const saved = localStorage.getItem(LS_KEY);
+        if (saved) {
+          const data = JSON.parse(saved);
+          const today = new Date().toDateString();
+          if (data.date === today) {
+            currentIntake = data.intake || 0;
+          }
+        }
+        updateTracker();
+      }
+
+      function saveTracker() {
+        const data = {
+          date: new Date().toDateString(),
+          intake: currentIntake
+        };
+        localStorage.setItem(LS_KEY, JSON.stringify(data));
+      }
+
+      function addWater(amount) {
+        currentIntake += amount;
+        saveTracker();
+        updateTracker();
+      }
+
+      function resetTracker() {
+        currentIntake = 0;
+        saveTracker();
+        updateTracker();
+      }
+
+      function updateTracker() {
+        const percent = Math.min(100, (currentIntake / dailyTarget) * 100);
+        document.getElementById("trackerFill").style.width = percent + "%";
+        document.getElementById("trackerText").textContent =
+          currentIntake + " / " + dailyTarget + " ml";
+      }
+
+      function calculate() {
+        const weight = parseFloat(document.getElementById("weight").value) || 65;
+        const activityFactor = parseFloat(document.getElementById("activity").value) || 1.4;
+        const climateFactor = parseFloat(document.getElementById("climate").value) || 1;
+        const specialAdd = parseFloat(document.getElementById("special").value) || 0;
+
+        // 基础需求: 30ml/kg体重
+        const baseWater = Math.round(weight * 30);
+
+        // 运动补充
+        const activityWater = Math.round(baseWater * (activityFactor - 1));
+
+        // 气候调整
+        const climateWater = Math.round(baseWater * (climateFactor - 1));
+
+        // 总量
+        const totalWater = baseWater + activityWater + climateWater + specialAdd;
+        dailyTarget = totalWater;
+
+        // 杯数 (250ml/杯)
+        const glasses = Math.ceil(totalWater / 250);
+
+        document.getElementById("totalWater").textContent = totalWater.toLocaleString();
+        document.getElementById("glassCount").textContent = "约 " + glasses + " 杯 (250ml/杯)";
+        document.getElementById("baseWater").textContent = baseWater + " ml";
+        document.getElementById("activityWater").textContent = "+" + activityWater + " ml";
+        document.getElementById("climateWater").textContent = "+" + climateWater + " ml";
+        document.getElementById("specialWater").textContent = "+" + specialAdd + " ml";
+
+        // 可视化水杯
+        renderWaterVisual(glasses);
+
+        // 时间表
+        renderSchedule(totalWater);
+
+        updateTracker();
+      }
+
+      function renderWaterVisual(glasses) {
+        const container = document.getElementById("waterVisual");
+        container.textContent = "";
+
+        const displayGlasses = Math.min(glasses, 12);
+        for (let i = 0; i < displayGlasses; i++) {
+          const glass = document.createElement("div");
+          glass.className = "glass";
+          glass.style.setProperty("--fill", "80%");
+          container.appendChild(glass);
+        }
+
+        if (glasses > 12) {
+          const more = document.createElement("span");
+          more.style.cssText =
+            "display: flex; align-items: center; font-size: 0.9rem; opacity: 0.8;";
+          more.textContent = "+" + (glasses - 12);
+          container.appendChild(more);
+        }
+      }
+
+      function renderSchedule(total) {
+        const container = document.getElementById("schedule");
+        container.textContent = "";
+
+        const schedule = [
+          { time: "07:00", label: "起床后", percent: 10 },
+          { time: "09:00", label: "上午", percent: 12 },
+          { time: "11:00", label: "午餐前", percent: 12 },
+          { time: "13:00", label: "午后", percent: 12 },
+          { time: "15:00", label: "下午", percent: 14 },
+          { time: "17:00", label: "晚餐前", percent: 12 },
+          { time: "19:00", label: "晚间", percent: 14 },
+          { time: "21:00", label: "睡前", percent: 14 }
+        ];
+
+        schedule.forEach((item) => {
+          const amount = Math.round((total * item.percent) / 100);
+          const div = document.createElement("div");
+          div.className = "schedule-item";
+
+          const time = document.createElement("span");
+          time.className = "schedule-time";
+          time.textContent = item.time;
+
+          const text = document.createElement("span");
+          text.className = "schedule-amount";
+          text.textContent = item.label + " - " + amount + "ml";
+
+          div.appendChild(time);
+          div.appendChild(text);
+          container.appendChild(div);
+        });
+      }
+
+      loadTracker();
+      calculate();
+
+      // Theme toggle
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", newTheme);
+        document.getElementById("theme-icon").textContent = newTheme === "light" ? "☀️" : "🌙";
+        localStorage.setItem("theme", newTheme);
+      }
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      if (savedTheme === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+        document.getElementById("theme-icon").textContent = "☀️";
+      }
+    </script>
+  </body>
+</html>

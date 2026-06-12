@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cursor Rules 指南 - WebUtils</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-code: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-magenta: #f72585;
+        --accent-yellow: #fee440;
+        --accent-blue: #4cc9f0;
+        --accent-purple: #7b2cbf;
+        --accent-green: #10b981;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-code: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d4d4d4;
+        --accent-cyan: #00d4b8;
+        --accent-magenta: #e63975;
+        --accent-yellow: #f5c518;
+        --accent-blue: #0ea5e9;
+        --accent-purple: #9333ea;
+        --accent-green: #059669;
+        --glow-cyan: rgb(0, 212, 184, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        background: var(--bg-deep);
+        color: var(--text-primary);
+        min-height: 100vh;
+        line-height: 1.8;
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgb(0, 245, 212, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgb(0, 245, 212, 0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+      }
+
+      /* Navigation */
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+      }
+
+      .nav-link {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 8px 14px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        transition: all 0.2s ease;
+      }
+
+      .nav-link:hover {
+        border-color: var(--accent-cyan);
+        color: var(--accent-cyan);
+      }
+
+      .nav-separator {
+        color: var(--text-muted);
+      }
+
+      .nav-current {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        color: var(--accent-cyan);
+      }
+
+      .theme-toggle {
+        margin-left: auto;
+        width: 40px;
+        height: 40px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        color: var(--text-primary);
+      }
+
+      .theme-toggle:hover {
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 20px var(--glow-cyan);
+        transform: rotate(-5deg);
+      }
+
+      /* Article Header */
+      .article-header {
+        margin-bottom: 48px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .article-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.7rem;
+        font-weight: 500;
+        padding: 4px 10px;
+        background: var(--accent-magenta);
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .article-header h1 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: clamp(1.8rem, 4vw, 2.5rem);
+        font-weight: 700;
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .article-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      .article-meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      /* Table of Contents */
+      .toc {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 24px;
+        margin-bottom: 48px;
+      }
+
+      .toc-title {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .toc-list {
+        list-style: none;
+      }
+
+      .toc-list li {
+        margin-bottom: 8px;
+      }
+
+      .toc-list a {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .toc-list a::before {
+        content: "→";
+        color: var(--accent-cyan);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .toc-list a:hover {
+        color: var(--accent-cyan);
+      }
+
+      .toc-list a:hover::before {
+        opacity: 1;
+      }
+
+      /* Article Content */
+      .article-content h2 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 48px 0 24px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--border-subtle);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .article-content h2 .icon {
+        font-size: 1.2rem;
+      }
+
+      .article-content h3 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 32px 0 16px;
+      }
+
+      .article-content p {
+        margin-bottom: 16px;
+        color: var(--text-secondary);
+      }
+
+      .article-content ul,
+      .article-content ol {
+        margin-bottom: 16px;
+        padding-left: 24px;
+        color: var(--text-secondary);
+      }
+
+      .article-content li {
+        margin-bottom: 8px;
+      }
+
+      .article-content strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .article-content a {
+        color: var(--accent-cyan);
+        text-decoration: none;
+        border-bottom: 1px dashed var(--accent-cyan);
+        transition: all 0.2s ease;
+      }
+
+      .article-content a:hover {
+        border-bottom-style: solid;
+      }
+
+      /* Code Blocks */
+      .code-block {
+        background: var(--bg-code);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        margin: 24px 0;
+        overflow: hidden;
+      }
+
+      .code-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: var(--bg-surface);
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .code-lang {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+      }
+
+      .copy-btn {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .copy-btn:hover {
+        border-color: var(--accent-cyan);
+        color: var(--accent-cyan);
+      }
+
+      .copy-btn.copied {
+        background: var(--accent-green);
+        border-color: var(--accent-green);
+        color: white;
+      }
+
+      .code-content {
+        padding: 16px;
+        overflow-x: auto;
+      }
+
+      .code-content pre {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        color: var(--text-primary);
+        margin: 0;
+        white-space: pre;
+      }
+
+      /* Info Box */
+      .info-box {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-left: 4px solid var(--accent-cyan);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        margin: 24px 0;
+      }
+
+      .info-box.warning {
+        border-left-color: var(--accent-yellow);
+      }
+
+      .info-box.tip {
+        border-left-color: var(--accent-green);
+      }
+
+      .info-box-title {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .info-box p {
+        margin: 0;
+        font-size: 0.9rem;
+      }
+
+      /* Table */
+      .table-wrapper {
+        overflow-x: auto;
+        margin: 24px 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+
+      th,
+      td {
+        padding: 12px 16px;
+        text-align: left;
+        border: 1px solid var(--border-subtle);
+      }
+
+      th {
+        background: var(--bg-surface);
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      td {
+        color: var(--text-secondary);
+      }
+
+      td code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        padding: 2px 6px;
+        background: var(--bg-code);
+        border-radius: var(--radius-sm);
+        color: var(--accent-cyan);
+      }
+
+      /* Footer */
+      .article-footer {
+        margin-top: 64px;
+        padding-top: 32px;
+        border-top: 1px solid var(--border-subtle);
+      }
+
+      .related-links {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .related-link {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        padding: 12px 20px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .related-link:hover {
+        border-color: var(--accent-cyan);
+        color: var(--accent-cyan);
+      }
+
+      /* Responsive */
+      @media (width <= 640px) {
+        .container {
+          padding: 24px 16px 60px;
+        }
+
+        .code-content {
+          padding: 12px;
+        }
+
+        .code-content pre {
+          font-size: 0.8rem;
+        }
+      }
+
+      .breadcrumb {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+      }
+      .breadcrumb a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumb">
+      <a href="../../../index.html">首页</a>
+      <span>›</span>
+      Cursor Rules 指南
+    </nav>
+    <div class="bg-grid"></div>
+
+    <div class="container">
+      <!-- Article Header -->
+      <header class="article-header">
+        <span class="article-badge">Wiki 教程</span>
+        <h1>Cursor Rules 完全指南</h1>
+        <div class="article-meta">
+          <span>📅 更新于 2024-12</span>
+          <span>⏱️ 阅读约 6 分钟</span>
+          <span>🏷️ Cursor / 配置</span>
+        </div>
+      </header>
+
+      <!-- Table of Contents -->
+      <div class="toc">
+        <div class="toc-title">📑 目录</div>
+        <ul class="toc-list">
+          <li><a href="#what-is-rules">什么是 Cursor Rules</a></li>
+          <li><a href="#rule-types">规则类型</a></li>
+          <li><a href="#setup">配置方法</a></li>
+          <li><a href="#templates">最佳实践模板</a></li>
+          <li><a href="#tips">使用技巧</a></li>
+          <li><a href="#resources">相关资源</a></li>
+        </ul>
+      </div>
+
+      <!-- Article Content -->
+      <article class="article-content">
+        <h2 id="what-is-rules">
+          <span class="icon">📋</span>
+          什么是 Cursor Rules
+        </h2>
+
+        <p>
+          Cursor Rules 是 Cursor 编辑器的规则配置系统，用于指导 AI
+          在代码生成过程中遵循特定的规范和标准。通过定义项目背景、编码规范、库偏好等，你可以确保
+          Cursor 生成的代码与项目需求高度契合。
+        </p>
+
+        <p>简单来说，Rules 就是给 Cursor AI 的"行为准则"：</p>
+        <ul>
+          <li>告诉 AI 你的项目是做什么的</li>
+          <li>规定代码应该遵循什么风格</li>
+          <li>指定使用哪些库和框架</li>
+          <li>设定输出语言和格式偏好</li>
+        </ul>
+
+        <h2 id="rule-types">
+          <span class="icon">🎯</span>
+          规则类型
+        </h2>
+
+        <p>Cursor Rules 分为两个级别：</p>
+
+        <h3>1. User Rules（全局规则）</h3>
+
+        <p>
+          位置：
+          <code>Cursor Settings → Rules</code>
+        </p>
+
+        <p>适用于所有项目的通用规则，如：</p>
+        <ul>
+          <li>输出语言偏好（中文/英文）</li>
+          <li>响应长度限制</li>
+          <li>统一的代码风格</li>
+          <li>通用的最佳实践</li>
+        </ul>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">User Rules 示例</span>
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          </div>
+          <div class="code-content">
+            <pre>
+# 语言设置
+- 所有对话和注释使用中文
+- 代码中的变量名和函数名使用英文
+
+# 代码风格
+- 使用 2 空格缩进
+- 使用单引号而非双引号（JavaScript/TypeScript）
+- 函数优先使用箭头函数
+
+# 输出格式
+- 回复简洁明了，避免冗余解释
+- 代码块要标注语言类型
+- 重要更改要说明原因</pre
+            >
+          </div>
+        </div>
+
+        <h3>2. Project Rules（项目规则）</h3>
+
+        <p>
+          位置：
+          <code>.cursor/rules/</code>
+          目录下的
+          <code>.mdc</code>
+          文件
+        </p>
+
+        <p>针对特定项目的规则，支持多种触发模式：</p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Rule Type</th>
+                <th>触发方式</th>
+                <th>适用场景</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Always</code></td>
+                <td>每次对话自动携带</td>
+                <td>项目核心规范、架构说明</td>
+              </tr>
+              <tr>
+                <td><code>Auto Attached</code></td>
+                <td>匹配文件类型自动生效</td>
+                <td>特定语言的编码规范</td>
+              </tr>
+              <tr>
+                <td><code>Agent Request</code></td>
+                <td>Agent 自动判断是否生效</td>
+                <td>特定功能的实现指南</td>
+              </tr>
+              <tr>
+                <td><code>Manual</code></td>
+                <td>手动 @ 引用</td>
+                <td>偶尔使用的特殊规则</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="setup">
+          <span class="icon">⚙️</span>
+          配置方法
+        </h2>
+
+        <h3>方法一：通过 Cursor 设置界面</h3>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">步骤</span>
+          </div>
+          <div class="code-content">
+            <pre>
+1. 打开 Cursor 设置（Cmd/Ctrl + ,）
+2. 选择 "Rules" 标签页
+3. 在 "Project Rules" 区域点击 "Add new rule"
+4. 指定规则名称，按 Enter 键
+5. Cursor 会自动创建 .cursor/rules 文件夹
+6. 编辑生成的 .mdc 文件，添加规则内容</pre
+            >
+          </div>
+        </div>
+
+        <h3>方法二：手动创建文件</h3>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          </div>
+          <div class="code-content">
+            <pre>
+# 创建规则目录
+mkdir -p .cursor/rules
+
+# 创建全局规则文件
+touch .cursor/rules/global.mdc
+
+# 创建特定语言规则
+touch .cursor/rules/typescript.mdc</pre
+            >
+          </div>
+        </div>
+
+        <h3>.mdc 文件结构</h3>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">markdown - .cursor/rules/global.mdc</span>
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          </div>
+          <div class="code-content">
+            <pre>
+---
+description: 项目全局规则
+globs:
+alwaysApply: true
+---
+
+# 项目背景
+这是一个使用 Next.js 14 + TypeScript 开发的 SaaS 应用。
+
+# 技术栈
+- 框架：Next.js 14 (App Router)
+- 语言：TypeScript 5.x
+- 样式：Tailwind CSS + shadcn/ui
+- 状态管理：Zustand
+- 数据获取：TanStack Query
+
+# 编码规范
+- 组件使用函数式组件 + Hooks
+- 使用 TypeScript 严格模式
+- 遵循 Airbnb JavaScript 风格指南
+
+# 文件结构
+- app/: 页面路由
+- components/: 可复用组件
+- lib/: 工具函数和配置
+- hooks/: 自定义 Hooks
+- types/: TypeScript 类型定义</pre
+            >
+          </div>
+        </div>
+
+        <h2 id="templates">
+          <span class="icon">📄</span>
+          最佳实践模板
+        </h2>
+
+        <h3>React/Next.js 项目</h3>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">markdown</span>
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          </div>
+          <div class="code-content">
+            <pre>
+# Next.js App Router 最佳实践
+
+## 组件规范
+- 默认使用 Server Components
+- 仅在需要交互时使用 Client Components（添加 'use client'）
+- 使用 layout.tsx 共享布局
+- 使用 loading.tsx 处理加载状态
+- 使用 error.tsx 处理错误
+
+## 数据获取
+- Server Components 中直接 async/await 获取数据
+- Client Components 使用 TanStack Query
+- 避免在客户端请求敏感数据
+
+## 样式规范
+- 使用 Tailwind CSS 工具类
+- 复杂样式抽取为组件
+- 使用 cn() 函数合并类名
+- 响应式设计遵循移动优先
+
+## 性能优化
+- 图片使用 next/image
+- 字体使用 next/font
+- 适当使用 React.memo 和 useMemo
+- 大型列表使用虚拟滚动</pre
+            >
+          </div>
+        </div>
+
+        <h3>Python 项目</h3>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">markdown</span>
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+          </div>
+          <div class="code-content">
+            <pre>
+# Python 项目规范
+
+## 代码风格
+- 遵循 PEP 8 规范
+- 使用 Black 格式化代码
+- 使用 isort 排序导入
+- 最大行长度 88 字符
+
+## 类型注解
+- 所有函数必须有类型注解
+- 使用 typing 模块的高级类型
+- 复杂类型使用 TypeAlias
+
+## 文档规范
+- 所有公共函数必须有 docstring
+- 使用 Google 风格的 docstring
+- 包含参数说明、返回值、异常
+
+## 测试
+- 使用 pytest 框架
+- 测试文件命名 test_*.py
+- 测试函数命名 test_*
+- 保持测试覆盖率 &gt; 80%</pre
+            >
+          </div>
+        </div>
+
+        <h2 id="tips">
+          <span class="icon">💡</span>
+          使用技巧
+        </h2>
+
+        <div class="info-box tip">
+          <div class="info-box-title">💡 技巧 1：提供项目上下文</div>
+          <p>
+            在规则开头清晰描述项目背景，帮助 AI 理解上下文。包括项目类型、目标用户、核心功能等。
+          </p>
+        </div>
+
+        <div class="info-box tip">
+          <div class="info-box-title">💡 技巧 2：明确能改什么、不能改什么</div>
+          <p>在规则中明确标注哪些文件/代码可以修改，哪些是核心逻辑不应该碰。</p>
+        </div>
+
+        <div class="info-box tip">
+          <div class="info-box-title">💡 技巧 3：使用 Auto Attached 规则</div>
+          <p>
+            为不同文件类型创建专门的规则。例如
+            <code>*.test.ts</code>
+            文件自动应用测试规范。
+          </p>
+        </div>
+
+        <div class="info-box warning">
+          <div class="info-box-title">⚠️ 注意事项</div>
+          <p>
+            规则不宜过长。过于详细的规则会占用 context 空间，影响 AI
+            理解能力。保持规则简洁、重点突出。
+          </p>
+        </div>
+
+        <h3>目录结构和技术栈文件</h3>
+
+        <p>推荐在项目根目录维护两个文件，并在规则中引用：</p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">目录结构</span>
+          </div>
+          <div class="code-content">
+            <pre>
+project/
+├── .cursor/
+│   └── rules/
+│       ├── global.mdc
+│       └── typescript.mdc
+├── directorystructure.md    # 目录结构说明
+├── technologystack.md       # 技术栈说明
+└── ...</pre
+            >
+          </div>
+        </div>
+
+        <h2 id="resources">
+          <span class="icon">📚</span>
+          相关资源
+        </h2>
+
+        <ul>
+          <li>
+            <a href="https://cursor.directory/rules" target="_blank">Cursor Directory</a>
+            - 社区分享的优质 Rules 模板
+          </li>
+          <li>
+            <a href="https://docs.cursor.com/context/rules-for-ai" target="_blank">
+              Cursor 官方文档
+            </a>
+            - Rules 使用指南
+          </li>
+          <li>
+            <a href="https://github.com/PatrickJS/awesome-cursorrules" target="_blank">
+              Awesome CursorRules
+            </a>
+            - 精选 Rules 集合
+          </li>
+        </ul>
+      </article>
+
+      <!-- Footer -->
+      <footer class="article-footer">
+        <div class="related-links">
+          <a href="mcp-servers.html" class="related-link">
+            <span>下一篇：MCP Servers 指南</span>
+            <span>→</span>
+          </a>
+          <a href="claude-skills.html" class="related-link">
+            <span>← Claude Skills 指南</span>
+          </a>
+          <a href="../index.html" class="related-link">
+            <span>← 返回资源导航</span>
+          </a>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // Theme management
+      const themeToggle = document.getElementById("theme-toggle");
+      const themeIcon = themeToggle.querySelector(".theme-icon");
+      const htmlElement = document.documentElement;
+
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      if (savedTheme === "light") {
+        htmlElement.setAttribute("data-theme", "light");
+        themeIcon.textContent = "☀️";
+      }
+
+      themeToggle.addEventListener("click", () => {
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        if (newTheme === "light") {
+          htmlElement.setAttribute("data-theme", "light");
+          themeIcon.textContent = "☀️";
+        } else {
+          htmlElement.removeAttribute("data-theme");
+          themeIcon.textContent = "🌙";
+        }
+
+        localStorage.setItem("theme", newTheme);
+      });
+
+      window.copyCode = function (btn) {
+        const codeBlock = btn.closest(".code-block");
+        const code = codeBlock.querySelector("pre").textContent;
+
+        navigator.clipboard.writeText(code).then(() => {
+          btn.textContent = "已复制";
+          btn.classList.add("copied");
+
+          setTimeout(() => {
+            btn.textContent = "复制";
+            btn.classList.remove("copied");
+          }, 2000);
+        });
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>行号添加工具 - WebUtils</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="行号添加工具 - WebUtils" />
+    <meta name="keywords" content="line-number,text,tools,webutils" />
+    <meta name="author" content="WebUtils" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://tools.realtime-ai.chat/tools/text/line-number.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="行号添加工具 - WebUtils" />
+    <meta property="og:description" content="行号添加工具 - WebUtils" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tools.realtime-ai.chat/tools/text/line-number.html" />
+    <meta property="og:site_name" content="WebUtils" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:type" content="image/png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="行号添加工具 - WebUtils" />
+    <meta name="twitter:description" content="行号添加工具 - WebUtils" />
+    <meta name="twitter:image" content="https://tools.realtime-ai.chat/social-preview.png" />
+
+    <meta name="description" content="为文本添加或删除行号，支持自定义格式、起始编号和分隔符" />
+    <style>
+      :root {
+        --bg-deep: #0a0a0f;
+        --bg-surface: #12121a;
+        --bg-card: #1a1a24;
+        --bg-input: #0e0e14;
+        --text-primary: #e8e8ed;
+        --text-secondary: #8888a0;
+        --text-muted: #55556a;
+        --border-subtle: #2a2a3a;
+        --border-strong: #3a3a4a;
+        --accent-cyan: #00f5d4;
+        --accent-green: #10b981;
+        --accent-red: #f43f5e;
+        --accent-yellow: #fbbf24;
+        --accent-purple: #a855f7;
+        --glow-cyan: rgb(0, 245, 212, 0.15);
+        --glow-green: rgb(16, 185, 129, 0.15);
+        --glow-red: rgb(244, 63, 94, 0.15);
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      [data-theme="light"] {
+        --bg-deep: #fafafa;
+        --bg-surface: #fff;
+        --bg-card: #fff;
+        --bg-input: #f5f5f5;
+        --bg-hover: #f5f5f5;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --text-muted: #999;
+        --border-subtle: #e5e5e5;
+        --border-strong: #d5d5d5;
+      }
+
+      :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #12121a;
+        --bg-tertiary: #1a1a25;
+        --text-primary: #fff;
+        --text-secondary: #88a;
+        --accent: #6366f1;
+        --border: #2a2a3a;
+        --success: #22c55e;
+      }
+      [data-theme="light"] {
+        --bg-primary: #f8fafc;
+        --bg-secondary: #fff;
+        --bg-tertiary: #f1f5f9;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --border: #e2e8f0;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          Inter,
+          -apple-system,
+          sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        padding: 2rem;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+      }
+      .header h1 {
+        font-size: 2rem;
+        background: linear-gradient(135deg, var(--accent), #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .header p {
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+      }
+      .back-link {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--accent);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+      }
+      .theme-toggle {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1.25rem;
+      }
+      .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 0.75rem;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+      }
+      input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .text-panels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+      .panel label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+      textarea {
+        width: 100%;
+        height: 350px;
+        padding: 1rem;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-family: Monaco, monospace;
+        font-size: 0.8rem;
+        resize: vertical;
+        line-height: 1.6;
+      }
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .btn-group {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        margin: 1.5rem 0;
+        flex-wrap: wrap;
+      }
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), #a855f7);
+        color: white;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+      }
+      .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+      }
+      .btn-secondary:hover {
+        border-color: var(--accent);
+      }
+      .toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.75rem 1.5rem;
+        background: var(--success);
+        color: white;
+        border-radius: 10px;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .toast.show {
+        opacity: 1;
+      }
+      @media (max-width: 768px) {
+        .text-panels {
+          grid-template-columns: 1fr;
+        }
+        .back-link span {
+          display: none;
+        }
+      }
+
+      .breadcrumb {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+      }
+      .breadcrumb a {
+        color: #667eea;
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb span {
+        color: #999;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="breadcrumb">
+      <a href="../../index.html">首页</a>
+      <span>›</span>
+      行号添加/移除
+    </nav>
+    <div class="container">
+      <div class="header">
+        <a href="../../index.html" class="back-link">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          <span>返回首页</span>
+        </a>
+        <h1>🔢 行号添加工具</h1>
+        <p>为文本添加或删除行号</p>
+        <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+      </div>
+
+      <div class="card">
+        <div class="options">
+          <div class="form-group">
+            <label>操作模式</label>
+            <select id="mode" onchange="process()">
+              <option value="add">添加行号</option>
+              <option value="remove">删除行号</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>起始行号</label>
+            <input type="number" id="start" value="1" min="0" onchange="process()" />
+          </div>
+          <div class="form-group">
+            <label>分隔符</label>
+            <select id="separator" onchange="process()">
+              <option value=": ">: (冒号)</option>
+              <option value=". ">. (点号)</option>
+              <option value=") ">) (括号)</option>
+              <option value="| ">| (竖线)</option>
+              <option value="\t">Tab</option>
+              <option value="  ">双空格</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>行号宽度</label>
+            <select id="padding" onchange="process()">
+              <option value="0">自动</option>
+              <option value="2">2位</option>
+              <option value="3">3位</option>
+              <option value="4">4位</option>
+              <option value="5">5位</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="text-panels">
+          <div class="panel">
+            <label>输入文本</label>
+            <textarea id="input" oninput="process()" placeholder="在此输入文本...">
+第一行内容
+第二行内容
+第三行内容
+第四行内容
+第五行内容</textarea
+            >
+          </div>
+          <div class="panel">
+            <label>输出结果</label>
+            <textarea id="output" readonly placeholder="处理结果..."></textarea>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="process()">🔄 处理</button>
+          <button class="btn btn-secondary" onclick="copyOutput()">📋 复制结果</button>
+          <button class="btn btn-secondary" onclick="swapTexts()">↔️ 交换</button>
+          <button class="btn btn-secondary" onclick="clearAll()">🗑️ 清空</button>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast">已复制</div>
+
+    <script>
+      window.toggleTheme = function () {
+        const t =
+          document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", t);
+        localStorage.setItem("theme", t);
+      };
+      document.documentElement.setAttribute("data-theme", localStorage.getItem("theme") || "dark");
+
+      function process() {
+        const input = document.getElementById("input").value;
+        const mode = document.getElementById("mode").value;
+        const start = parseInt(document.getElementById("start").value) || 1;
+        const separator = document.getElementById("separator").value.replace("\\t", "\t");
+        const padding = parseInt(document.getElementById("padding").value);
+
+        const lines = input.split("\n");
+        let result;
+
+        if (mode === "add") {
+          const maxWidth = padding || String(start + lines.length - 1).length;
+          result = lines
+            .map((line, i) => {
+              const num = String(start + i).padStart(maxWidth, "0");
+              return num + separator + line;
+            })
+            .join("\n");
+        } else {
+          result = lines
+            .map((line) => {
+              return line.replace(/^\s*\d+[\s.:)\-|]+/, "");
+            })
+            .join("\n");
+        }
+
+        document.getElementById("output").value = result;
+      }
+
+      window.copyOutput = function () {
+        const output = document.getElementById("output").value;
+        if (output) {
+          navigator.clipboard.writeText(output);
+          const toast = document.getElementById("toast");
+          toast.classList.add("show");
+          setTimeout(() => toast.classList.remove("show"), 2000);
+        }
+      };
+
+      window.swapTexts = function () {
+        const input = document.getElementById("input");
+        const output = document.getElementById("output");
+        const temp = input.value;
+        input.value = output.value;
+        output.value = temp;
+      };
+
+      window.clearAll = function () {
+        document.getElementById("input").value = "";
+        document.getElementById("output").value = "";
+      };
+
+      process();
+    </script>
+  </body>
+</html>

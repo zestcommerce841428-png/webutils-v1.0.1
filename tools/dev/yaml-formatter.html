@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YAML 格式化 - WebUtils</title>
+    <meta name="description" content="格式化和验证 YAML 数据" />
+    <meta name="keywords" content="YAML formatter validator 格式化 验证 配置文件" />
+    <style>
+      :root {
+        --bg: #f8f9fa;
+        --card-bg: #fff;
+        --text: #212529;
+        --text-muted: #6c757d;
+        --border: #dee2e6;
+        --primary: #0d6efd;
+        --success: #198754;
+        --danger: #dc3545;
+        --shadow: 0 2px 8px rgb(0, 0, 0, 0.08);
+        --radius: 8px;
+      }
+      [data-theme="dark"] {
+        --bg: #0a0a0f;
+        --card-bg: #1a1a24;
+        --text: #e8e8ed;
+        --text-muted: #9898a4;
+        --border: #2a2a36;
+        --primary: #a855f7;
+        --success: #10b981;
+        --danger: #ef4444;
+        --shadow: 0 2px 8px rgb(0, 0, 0, 0.3);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 24px;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: var(--primary);
+        text-decoration: none;
+      }
+      h1 {
+        font-size: 1.75rem;
+        margin: 0 0 8px;
+      }
+      .desc {
+        color: var(--text-muted);
+        margin: 0 0 24px;
+      }
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+      }
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        cursor: pointer;
+        font-size: 1.2rem;
+        z-index: 100;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      @media (max-width: 800px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-group label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .form-group textarea {
+        width: 100%;
+        height: 400px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-monospace, monospace;
+        font-size: 0.85rem;
+        resize: vertical;
+      }
+      .btn-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        padding: 10px 20px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card-bg);
+        color: var(--text);
+        cursor: pointer;
+      }
+      .btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+      .btn.primary {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+      }
+      .status {
+        padding: 8px 16px;
+        border-radius: var(--radius);
+        font-size: 0.9rem;
+        margin-bottom: 16px;
+      }
+      .status.valid {
+        background: rgba(25, 135, 84, 0.15);
+        color: var(--success);
+      }
+      .status.invalid {
+        background: rgba(220, 53, 69, 0.15);
+        color: var(--danger);
+      }
+      .copy-btn {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--card-bg);
+        color: var(--text-muted);
+        cursor: pointer;
+      }
+      footer {
+        text-align: center;
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+      footer a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <a href="../../index.html" class="back-link">← 返回工具列表</a>
+      <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+      <h1>YAML 格式化</h1>
+      <p class="desc">格式化和验证 YAML 数据，支持与 JSON 互转</p>
+
+      <div class="card">
+        <div class="btn-row">
+          <button class="btn primary" onclick="formatYaml()">格式化 YAML</button>
+          <button class="btn" onclick="yamlToJson()">YAML → JSON</button>
+          <button class="btn" onclick="jsonToYaml()">JSON → YAML</button>
+          <button class="btn" onclick="minifyYaml()">压缩 YAML</button>
+          <button class="btn" onclick="loadSample()">示例</button>
+          <button class="btn" onclick="clearAll()">清空</button>
+        </div>
+
+        <div class="status" id="status" style="display: none"></div>
+
+        <div class="grid">
+          <div class="form-group">
+            <label>
+              输入 YAML
+              <button class="copy-btn" onclick="copyInput()">复制</button>
+            </label>
+            <textarea
+              id="input"
+              placeholder="name: John
+age: 30
+skills:
+  - JavaScript
+  - Python"
+              oninput="validate()"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label>
+              输出
+              <button class="copy-btn" onclick="copyOutput()">复制</button>
+            </label>
+            <textarea id="output" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        纯前端工具 · 无服务器 ·
+        <a href="../../index.html">WebUtils</a>
+      </footer>
+    </div>
+
+    <script>
+      function showStatus(message, isValid) {
+        const el = document.getElementById("status");
+        el.textContent = message;
+        el.className = "status " + (isValid ? "valid" : "invalid");
+        el.style.display = "block";
+      }
+
+      function validate() {
+        const input = document.getElementById("input").value.trim();
+        if (!input) {
+          document.getElementById("status").style.display = "none";
+          return null;
+        }
+
+        try {
+          const result = jsyaml.load(input);
+          showStatus("✓ YAML 格式正确", true);
+          return result;
+        } catch (e) {
+          showStatus("✗ YAML 格式错误: " + e.message, false);
+          return null;
+        }
+      }
+
+      function formatYaml() {
+        const obj = validate();
+        if (obj !== null) {
+          document.getElementById("output").value = jsyaml.dump(obj, {
+            indent: 2,
+            lineWidth: -1,
+            noRefs: true
+          });
+        }
+      }
+
+      function yamlToJson() {
+        const obj = validate();
+        if (obj !== null) {
+          document.getElementById("output").value = JSON.stringify(obj, null, 2);
+          showStatus("✓ 已转换为 JSON", true);
+        }
+      }
+
+      function jsonToYaml() {
+        const input = document.getElementById("input").value.trim();
+        try {
+          const obj = JSON.parse(input);
+          document.getElementById("output").value = jsyaml.dump(obj, {
+            indent: 2,
+            lineWidth: -1,
+            noRefs: true
+          });
+          showStatus("✓ 已转换为 YAML", true);
+        } catch (e) {
+          showStatus("✗ JSON 格式错误: " + e.message, false);
+        }
+      }
+
+      function minifyYaml() {
+        const obj = validate();
+        if (obj !== null) {
+          document.getElementById("output").value = jsyaml.dump(obj, {
+            flowLevel: 0,
+            noRefs: true
+          });
+          showStatus("✓ 已压缩 YAML", true);
+        }
+      }
+
+      function loadSample() {
+        document.getElementById("input").value = `# 服务器配置示例
+server:
+  host: localhost
+  port: 8080
+  ssl:
+    enabled: true
+    cert: /path/to/cert.pem
+    key: /path/to/key.pem
+
+database:
+  type: postgresql
+  host: db.example.com
+  port: 5432
+  name: myapp
+  credentials:
+    username: admin
+    password: secret123
+
+logging:
+  level: info
+  format: json
+  outputs:
+    - type: file
+      path: /var/log/app.log
+    - type: console
+
+features:
+  - name: authentication
+    enabled: true
+  - name: caching
+    enabled: true
+    ttl: 3600
+  - name: rate-limiting
+    enabled: false`;
+        validate();
+      }
+
+      function copyInput() {
+        navigator.clipboard.writeText(document.getElementById("input").value);
+      }
+
+      function copyOutput() {
+        navigator.clipboard.writeText(document.getElementById("output").value);
+      }
+
+      function clearAll() {
+        document.getElementById("input").value = "";
+        document.getElementById("output").value = "";
+        document.getElementById("status").style.display = "none";
+      }
+
+      function toggleTheme() {
+        const html = document.documentElement;
+        const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        html.setAttribute("data-theme", next);
+        document.querySelector(".theme-toggle").textContent = next === "dark" ? "🌙" : "☀️";
+        localStorage.setItem("theme", next);
+      }
+      (function () {
+        const saved = localStorage.getItem("theme");
+        if (saved) {
+          document.documentElement.setAttribute("data-theme", saved);
+          document.querySelector(".theme-toggle").textContent = saved === "dark" ? "🌙" : "☀️";
+        }
+      })();
+    </script>
+  </body>
+</html>
